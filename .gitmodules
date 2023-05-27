@@ -1,0 +1,3 @@
+[submodule "1.1.pricing"]
+	path = 1.1.pricing
+	url = https://github.com/phanthaiduong22/gemo-technical1-pricing
