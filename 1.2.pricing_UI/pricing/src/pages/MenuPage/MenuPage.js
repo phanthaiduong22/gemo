@@ -119,13 +119,6 @@ class MenuPage extends React.Component {
               ))}
             </div>
           </div>
-          {/* {user && user.role === "customer" && (
-            <div className="container border rounded">
-              <div className="row">
-                <Cart ref={(cart) => (this.cart = cart)} />
-              </div>
-            </div>
-          )} */}
         </div>
       </>
     );

@@ -60,6 +60,24 @@ class Order extends Component {
     }
   };
 
+  reCreateOrder = async (orderId) => {
+    const userId = JSON.parse(localStorage.getItem("user"))._id;
+    try {
+      await axios.post(
+        `${backendUrl}/users/${userId}/orders/${orderId}/recreate`
+      );
+      // Show success alert
+      this.props.showAlert("success", "Order recreated successfully");
+      this.props.getOrdersByUserId();
+    } catch (error) {
+      // Show error alert
+      this.props.showAlert(
+        "danger",
+        `Error recreating order: ${error.message}`
+      );
+    }
+  };
+
   alertDismiss = () => {
     this.setState({ alert: { show: false, message: "", type: "" } });
   };
@@ -67,7 +85,7 @@ class Order extends Component {
   render() {
     const user = JSON.parse(localStorage.getItem("user"));
     const { order } = this.state;
-    console.log(order);
+    console.log(order.status);
     const { items } = order;
     return (
       <div>
@@ -186,6 +204,16 @@ class Order extends Component {
                             Cancel Order
                           </button>
                         )}
+                      {order.status === "Completed" && (
+                        <button
+                          className="btn btn-success mr-2"
+                          onClick={() =>
+                            this.reCreateOrder(order._id, order.userId)
+                          }
+                        >
+                          Order Again
+                        </button>
+                      )}
                     </>
                   ) : (
                     <>
@@ -197,6 +225,16 @@ class Order extends Component {
                           }
                         >
                           Cancel Order
+                        </button>
+                      )}
+                      {order.status === "Completed" && (
+                        <button
+                          className="btn btn-success mr-2"
+                          onClick={() =>
+                            this.reCreateOrder(order._id, order.userId)
+                          }
+                        >
+                          Order Again
                         </button>
                       )}
                     </>
