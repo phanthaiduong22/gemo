@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const User = require("./models/user");
 const Order = require("./models/order");
+const orderHandler = require("./services/orderHandler");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -127,38 +128,9 @@ app.post("/api/users/:userId/orders", async (req, res) => {
 
 // GET /orders/:userId
 
-async function getOrdersByUserId(userId, userRole) {
-  try {
-    let orders;
 
-    if (userRole === "staff") {
-      orders = await Order.find();
-    } else if (userRole === "customer") {
-      orders = await Order.find({ user: userId });
-    } else {
-      throw new Error("Invalid user role");
-    }
 
-    return orders;
-  } catch (error) {
-    console.error("Error retrieving orders:", error);
-    throw error;
-  }
-}
-
-app.get("/api/users/:userId/orders", async (req, res) => {
-  const { userId } = req.params;
-  const user = await User.findById(userId);
-  const userRole = user ? user.role : null;
-
-  try {
-    const orders = await getOrdersByUserId(userId, userRole);
-    res.json(orders);
-  } catch (error) {
-    console.error("Error retrieving orders:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+app.get("/api/users/:userId/orders", async (req, res) => orderHandler.getOrdersOfUser(req, res));
 
 app.put("/api/users/:userId/orders/:orderId/status", async (req, res) => {
   const { orderId, userId } = req.params;
