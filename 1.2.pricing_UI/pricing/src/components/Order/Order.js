@@ -9,6 +9,7 @@ import axios from "axios";
 import "./Order.css";
 import { showAlert } from "../../redux/actions/alertActions";
 import { connect } from "react-redux"; // Import connect from react-redux
+import ConfirmModal from "../../components/ConfirmModal/ConfirmModal"; // Import ConfirmModal component
 
 const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
@@ -20,6 +21,11 @@ class Order extends Component {
     this.state = {
       order: this.props.order,
       user: JSON.parse(localStorage.getItem("user")),
+      confirmModal: {
+        show: false,
+        confirmOrderId: null,
+        confirmStatus: "", // Added state variable for the confirm status
+      },
     };
   }
 
@@ -40,6 +46,28 @@ class Order extends Component {
   }
 
   updateOrderStatus = async (orderId, status) => {
+    this.setState((prevState) => ({
+      confirmModal: {
+        ...prevState.confirmModal,
+        show: true,
+        confirmOrderId: orderId,
+        confirmStatus: status,
+      },
+    }));
+  };
+
+  recreateOrder = (orderId) => {
+    this.setState((prevState) => ({
+      confirmModal: {
+        ...prevState.confirmModal,
+        show: true,
+        confirmOrderId: orderId,
+        confirmStatus: "Recreate",
+      },
+    }));
+  };
+
+  callUpdateOrderStatus = async (orderId, status) => {
     const userId = JSON.parse(localStorage.getItem("user"))._id;
     try {
       await axios.put(
@@ -60,15 +88,52 @@ class Order extends Component {
     }
   };
 
-  alertDismiss = () => {
-    this.setState({ alert: { show: false, message: "", type: "" } });
+  callRecreateOrder = async (orderId) => {
+    const userId = this.state.user._id;
+    try {
+      await axios.post(
+        `${backendUrl}/users/${userId}/orders/${orderId}/recreate`
+      );
+      // Show success alert
+      this.props.showAlert("success", "Order recreated successfully");
+      this.props.getOrdersByUserId();
+    } catch (error) {
+      // Show error alert
+      console.log(error);
+      this.props.showAlert("danger", `Error recreating order: ${error.response.data.message}`);
+    }
+  };
+
+  handleConfirmation = (confirmed) => {
+    const { confirmModal } = this.state;
+    const { confirmOrderId, confirmStatus } = confirmModal;
+
+    if (confirmed) {
+      if (confirmStatus === "Recreate") {
+        // Call the backend API to recreate the order
+        this.callRecreateOrder(confirmOrderId);
+      } else {
+        // Call the backend API to update the order status
+        this.callUpdateOrderStatus(confirmOrderId, confirmStatus);
+      }
+    }
+
+    // Reset the confirmModal state
+    this.setState((prevState) => ({
+      confirmModal: {
+        ...prevState.confirmModal,
+        show: false,
+        confirmOrderId: null,
+        confirmStatus: "",
+      },
+    }));
   };
 
   render() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const { order } = this.state;
-    console.log(order);
+    // const user = JSON.parse(localStorage.getItem("user"));
+    const { order, user } = this.state;
     const { items } = order;
+    const showConfirmModal = this.state.confirmModal.show;
     return (
       <div>
         <div key={order._id} className="col-lg-10 col-xl-12 p-6 mb-4">
@@ -186,6 +251,16 @@ class Order extends Component {
                             Cancel Order
                           </button>
                         )}
+                      {order.status === "Completed" && (
+                        <button
+                          className="btn btn-success mr-2"
+                          onClick={() =>
+                            this.recreateOrder(order._id, order.userId)
+                          }
+                        >
+                          Order Again
+                        </button>
+                      )}
                     </>
                   ) : (
                     <>
@@ -199,9 +274,26 @@ class Order extends Component {
                           Cancel Order
                         </button>
                       )}
+                      {order.status === "Completed" && (
+                        <button
+                          className="btn btn-success mr-2"
+                          onClick={() =>
+                            this.recreateOrder(order._id, order.userId)
+                          }
+                        >
+                          Order Again
+                        </button>
+                      )}
                     </>
                   )}
                 </div>
+                {showConfirmModal && (
+                  <ConfirmModal
+                    message="Are you sure to proceed?"
+                    showModal={true}
+                    onConfirm={this.handleConfirmation}
+                  />
+                )}
                 <h5 className="d-flex align-items-center justify-content-end text-uppercase mb-0">
                   Total paid:{"  "}
                   <span className="ml-2 h2 mb-0 ms-2">
