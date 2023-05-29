@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pricing-fe-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pricing-fe
+  template:
+    metadata:
+      labels:
+        app: pricing-fe
+    spec:
+      containers:
+        - name: pricing-fe
+          image: phanthaiduong22/pricing_fe
+          ports:
+            - containerPort: 80
+
