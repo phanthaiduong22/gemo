@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShoppingCart, faBell } from "@fortawesome/free-solid-svg-icons";
+import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
 import { Navigate } from "react-router-dom";
 import Cart from "../Cart/Cart";
 import gemoLogo from "../../images/gemologo.png";
@@ -31,7 +31,7 @@ class CustomNavbar extends Component {
     if (user == null) {
       return <Navigate to="/login" />;
     }
-    const { isModalOpen, setOpenModal } = this.state;
+    const { isModalOpen } = this.state;
     return (
       <>
         <Navbar bg="light" expand="lg" className="mb-4">
@@ -53,14 +53,14 @@ class CustomNavbar extends Component {
               </Nav>
             </Navbar.Collapse>
             <div className="d-flex align-items-center">
-              <a
+              <button
                 className="text-reset me-3"
                 onClick={() => {
                   this.setOpenModal(true);
                 }}
               >
                 <FontAwesomeIcon icon={faShoppingCart} />
-              </a>
+              </button>
               <NavDropdown title={user.username} id="basic-nav-dropdown">
                 <NavDropdown.Item href="#action1">{user.role}</NavDropdown.Item>
                 <NavDropdown.Item href="#action2" onClick={this.handleLogout}>

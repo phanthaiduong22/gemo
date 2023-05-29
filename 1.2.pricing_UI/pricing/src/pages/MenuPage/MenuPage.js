@@ -1,6 +1,5 @@
 import React from "react";
 import Item from "../../components/Item/Item";
-import Cart from "../../components/Cart/Cart";
 
 import coffeeImage from "../../images/coffee.png";
 import milkteaImage from "../../images/milktea.png";
@@ -8,7 +7,6 @@ import bagelImage from "../../images/bagel.png";
 import sandwichImage from "../../images/sandwich.png";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar.js";
 import { Navigate } from "react-router-dom";
-// import CustomAlert from "../../components/CustomAlert/CustomAlert.js";
 
 class MenuPage extends React.Component {
   constructor(props) {
@@ -68,7 +66,7 @@ class MenuPage extends React.Component {
   }
 
   render() {
-    const { currentTab, menuItems, locale } = this.state;
+    const { currentTab, menuItems } = this.state;
     const user = JSON.parse(localStorage.getItem("user"));
 
     const filteredItems =

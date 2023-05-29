@@ -1,6 +1,5 @@
 import React from "react";
 import { tw } from "twind";
-import coffeeImage from "../../images/coffee.png";
 
 const TYPE_DRINKS_BASE_PRICES = {
   Coffee: 2,
@@ -50,7 +49,7 @@ class DrinkOptionModal extends React.Component {
   }
 
   handleOptionChange = (event) => {
-    const { name, value, type, checked } = event.target;
+    const { name, value, checked } = event.target;
     this.setState({ showError: false });
 
     if (name === "hasWhippingCream") {
@@ -201,7 +200,7 @@ class DrinkOptionModal extends React.Component {
             <img
               className={tw`inset-0 object-cover w-20 h-20 transition duration-300 transform hover:scale-110`}
               src={item.image}
-              alt="Image Image"
+              alt="Item"
             />
             <h2 className={tw`ml-4 text-2xl font-bold`}>Additional Options</h2>
           </div>
