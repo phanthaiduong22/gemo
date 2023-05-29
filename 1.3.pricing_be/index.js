@@ -17,7 +17,14 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors({ origin: "*" }));
+if (process.env.NODE_ENV === "production") {
+  // Code specific to production environment
+  app.use(cors({ origin: "https://restaurant.duongphan.com" }));
+} else {
+  // Code for other environments (e.g., development, testing)
+  app.use(cors({ origin: "*" }));
+}
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(logger);
