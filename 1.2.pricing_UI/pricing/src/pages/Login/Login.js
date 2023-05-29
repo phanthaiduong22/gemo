@@ -5,7 +5,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 
 const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
 
 class Login extends React.Component {
   constructor(props) {
@@ -76,6 +76,17 @@ class Login extends React.Component {
       });
   };
 
+  handleLoginWithFacebook = async (e) => {
+    e.preventDefault();
+
+    await axios.get(`http://localhost:8005/auth/facebook`, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
   render() {
     const { showError, errorText } = this.state;
     const user = JSON.parse(localStorage.getItem("user"));
@@ -125,6 +136,9 @@ class Login extends React.Component {
                     <button type="submit" className="btn btn-primary">
                       Login
                     </button>
+                    <a href="http://localhost:8005/auth/facebook" className="btn btn-primary ml-2">
+                      Login with Facebook
+                    </a>
                     <Link to="/register" className="btn btn-primary ml-2">
                       Register
                     </Link>

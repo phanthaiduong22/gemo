@@ -5,62 +5,25 @@ const User = require("../models/user");
 
 const router = express.Router();
 
-// Login
-router.post("/login", async (req, res, next) => {
-  const { username, password } = req.body;
-
+router.get("/users", async (req, res, next) => {
   try {
-    // Find the user by username
-    const user = await User.findOne({ username });
-
-    if (!user) {
-      return res.status(401).json({ error: "Invalid username or password" });
-    }
-
-    // Compare the provided password with the stored hashed password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid username or password" });
-    }
-
-    // Create a user object to be returned, excluding the password field
-    const userResponse = {
-      _id: user._id,
-      username: user.username,
-      role: user.role,
-    };
-
-    res.json({ user: userResponse });
+    const users = await User.find();
+    if (!users) return res.status(404).json({ error: "No user found!" });
+    return res.status(200).json({ users });
   } catch (error) {
-    next(error);
+    next(error)
   }
-});
+})
 
-// Register
-router.post("/register", async (req, res, next) => {
-  const { username, password, role } = req.body;
-
+router.get('/user/:id', async (req, res, next) => {
+  let { id } = req.params;
+  if (!id) return res.status(400).json({ error: "No user id found!" });
   try {
-    // Check if the username is already taken
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ error: "Username already exists" });
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user with role
-    const newUser = new User({ username, password: hashedPassword, role });
-
-    // Save the user to the database
-    await newUser.save();
-
-    res.json({ message: "Registration successful" });
+    let user = await User.findById(id);
+    return res.status(200).json({ user })
   } catch (error) {
-    next(error);
+    next(error)
   }
-});
+})
 
 module.exports = router;

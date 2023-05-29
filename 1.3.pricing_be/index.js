@@ -6,12 +6,47 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./middleware/logger");
+const session  = require('express-session');
+const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+
+const passport = require('passport');
+const FacebookStrategy = require('passport-facebook').Strategy;
 
 dotenv.config();
 
 const app = express();
+
+// Init passport 
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+  done(null, obj);
+});
+
+passport.use(new FacebookStrategy({
+  clientID: process.env.FACEBOOK_ID,
+  clientSecret: process.env.FACEBOOK_SECRET,
+  callbackURL: "http://localhost:8005/auth/facebook/callback"
+},
+  function (accessToken, refreshToken, profile, done) {
+    // This function will be called when the user has authenticated successfully
+    // You can use the user's profile information to create a new user in your database or log them in
+    done(null, profile);
+  }
+));
+
+app.use(session({
+  secret: "cookie_secret",
+  resave: true,
+  saveUninitialized: true
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Connect to MongoDB
 connectDB();
@@ -24,6 +59,7 @@ app.use(logger);
 app.use(morgan("dev"));
 
 // Routes
+app.use("/", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", orderRoutes);
 
