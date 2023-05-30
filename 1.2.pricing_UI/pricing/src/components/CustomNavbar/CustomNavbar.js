@@ -10,12 +10,10 @@ class CustomNavbar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: null,
       isModalOpen: false,
+      user: JSON.parse(localStorage.getItem("user")),
     };
   }
-
-  componentDidMount = () => {};
 
   handleLogout = () => {
     localStorage.removeItem("user");
@@ -27,10 +25,11 @@ class CustomNavbar extends Component {
   };
 
   render() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user == null) {
+    const { user } = this.state;
+    if (!user) {
       return <Navigate to="/login" />;
     }
+
     const { isModalOpen } = this.state;
     return (
       <>
@@ -50,6 +49,7 @@ class CustomNavbar extends Component {
               <Nav className="me-auto mb-2 mb-lg-0">
                 <Nav.Link href="/menu">Menu</Nav.Link>
                 <Nav.Link href="/orders">Orders</Nav.Link>
+                <Nav.Link href="/profile">Profile</Nav.Link>
               </Nav>
             </Navbar.Collapse>
             <div className="d-flex align-items-center">
@@ -62,7 +62,7 @@ class CustomNavbar extends Component {
                 <FontAwesomeIcon icon={faShoppingCart} />
               </button>
               <NavDropdown title={user.username} id="basic-nav-dropdown">
-                <NavDropdown.Item href="#action1">{user.role}</NavDropdown.Item>
+                <NavDropdown.Item href="/profile">Profile</NavDropdown.Item>
                 <NavDropdown.Item href="#action2" onClick={this.handleLogout}>
                   Logout
                 </NavDropdown.Item>

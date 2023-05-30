@@ -9,20 +9,29 @@ import OrderPage from "./pages/OrderPage/OrderPage";
 import store from "./redux/store";
 import CustomAlert from "../src/components/CustomAlert/CustomAlert";
 import { IntlProvider } from "react-intl";
+import UserProfile from "./pages/UserProfile/UserProfile";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const App = () => {
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+
   return (
     <Provider store={store}>
       <div>
         <CustomAlert />
         <IntlProvider locale="en">
-          <Routes>
-            <Route path="/" element={<MenuPage />} />
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-            <Route path="menu" element={<MenuPage />} />
-            <Route path="orders" element={<OrderPage />} />
-          </Routes>
+          <GoogleOAuthProvider clientId={googleClientId}>
+            <React.StrictMode>
+              <Routes>
+                <Route path="/" element={<MenuPage />} />
+                <Route path="login" element={<Login />} />
+                <Route path="register" element={<Register />} />
+                <Route path="menu" element={<MenuPage />} />
+                <Route path="orders" element={<OrderPage />} />
+                <Route path="profile" element={<UserProfile />} />
+              </Routes>
+            </React.StrictMode>
+          </GoogleOAuthProvider>
         </IntlProvider>
       </div>
     </Provider>

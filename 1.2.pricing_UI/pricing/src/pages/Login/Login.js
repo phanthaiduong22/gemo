@@ -1,46 +1,90 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Alert } from "react-bootstrap";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { googleLogout, useGoogleLogin } from "@react-oauth/google";
 
 const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
 
-class Login extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: "",
-      password: "",
-      showError: false,
-      errorText: "",
-    };
-  }
+const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showError, setShowError] = useState(false);
+  const [errorText, setErrorText] = useState("");
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
-  componentDidMount = () => {
-    console.log("backendUrl", process.env);
+  const [googleUser, setGoogleUser] = useState(null);
+
+  const login = useGoogleLogin({
+    onSuccess: (codeResponse) => {
+      setGoogleUser(codeResponse);
+    },
+    onError: (error) => console.log("Login Failed:", error),
+  });
+
+  useEffect(() => {
+    if (googleUser) {
+      axios
+        .get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${googleUser.access_token}`
+        )
+        .then((res) => {
+          console.log(res.data);
+
+          const { email, picture, id, name } = res.data;
+
+          const newUser = {
+            username: email,
+            fullName: name,
+            email,
+            role: "customer",
+            picture,
+            name,
+            googleId: id,
+          };
+
+          axios
+            .post(`${backendUrl}/register`, newUser)
+            .then((response) => {
+              console.log(response.data);
+              const user = {
+                ...newUser,
+                _id: response.data.userId, // Store _id in the user object
+              };
+              localStorage.setItem("user", JSON.stringify(user));
+              setUser(user);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [googleUser]);
+
+  useEffect(() => {
+    // Update user state when localStorage changes
+    setUser(JSON.parse(localStorage.getItem("user")));
+  }, []);
+
+  const handleUsernameChange = (e) => {
+    setUsername(e.target.value);
   };
 
-  handleUsernameChange = (e) => {
-    this.setState({ username: e.target.value });
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
   };
 
-  handlePasswordChange = (e) => {
-    this.setState({ password: e.target.value });
-  };
-
-  handleFormSubmit = (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
-
-    const { username, password } = this.state;
 
     // Check if username or password is empty
     if (!username || !password) {
-      this.setState({
-        showError: true,
-        errorText: "Please enter both username and password",
-      });
+      setShowError(true);
+      setErrorText("Please enter both username and password");
       return;
     }
 
@@ -49,13 +93,15 @@ class Login extends React.Component {
       .then((response) => {
         const data = response.data;
         if (data.user) {
-          localStorage.setItem("user", JSON.stringify(data.user));
-          window.location.reload();
+          const user = {
+            ...data.user,
+          };
+          localStorage.setItem("user", JSON.stringify(user));
+          setUser(user);
+          window.location.href = "/"; // Redirect to home page
         } else {
-          this.setState({
-            showError: true,
-            errorText: "Wrong username or password. Please try again.",
-          });
+          setShowError(true);
+          setErrorText("Wrong username or password. Please try again.");
         }
       })
       .catch((error) => {
@@ -69,74 +115,91 @@ class Login extends React.Component {
           errorMessage = error.response.data.error;
         }
 
-        this.setState({
-          showError: true,
-          errorText: errorMessage,
-        });
+        setShowError(true);
+        setErrorText(errorMessage);
       });
   };
 
-  render() {
-    const { showError, errorText } = this.state;
-    const user = JSON.parse(localStorage.getItem("user"));
+  const handleLogout = () => {
+    googleLogout(); // Call the googleLogout function
+    setGoogleUser(null);
+    setUser(null);
+    localStorage.removeItem("user");
+  };
 
-    return (
-      <div className="container">
-        {user ? <Navigate to="/" /> : null}
-        <div className="row justify-content-center">
-          <div className="col-md-6">
-            <div className="card mt-5">
-              <div className="card-header">
-                <h4>Login</h4>
-              </div>
-              <div className="card-body">
-                {showError && (
-                  <Alert
-                    variant="danger"
-                    onClose={() => this.setState({ showError: false })}
-                  >
-                    {errorText}
-                  </Alert>
-                )}
-                <form onSubmit={this.handleFormSubmit}>
-                  <div className="form-group">
-                    <label htmlFor="username">Username</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="username"
-                      placeholder="Enter your username"
-                      value={this.state.username}
-                      onChange={this.handleUsernameChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="password">Password</label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      id="password"
-                      placeholder="Enter your password"
-                      value={this.state.password}
-                      onChange={this.handlePasswordChange}
-                    />
-                  </div>
-                  <div className="mt-4">
-                    <button type="submit" className="btn btn-primary">
-                      Login
-                    </button>
-                    <Link to="/register" className="btn btn-primary ml-2">
-                      Register
-                    </Link>
-                  </div>
-                </form>
-              </div>
+  return (
+    <div className="container">
+      {user ? <Navigate to="/" /> : null}
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="card mt-5">
+            <div className="card-header">
+              <h4>Login</h4>
+            </div>
+            <div className="card-body">
+              {showError && (
+                <Alert variant="danger" onClose={() => setShowError(false)}>
+                  {errorText}
+                </Alert>
+              )}
+              <form onSubmit={handleFormSubmit}>
+                <div className="form-group">
+                  <label htmlFor="username">Username</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="username"
+                    placeholder="Enter your username"
+                    value={username}
+                    onChange={handleUsernameChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="password">Password</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    id="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                  />
+                </div>
+                <div className="mt-4">
+                  <button type="submit" className="btn btn-primary">
+                    Login
+                  </button>
+                  <Link to="/register" className="btn btn-primary ml-2">
+                    Register
+                  </Link>
+                </div>
+              </form>
+              <button
+                onClick={() => login()}
+                className="btn btn-primary d-flex align-items-center mt-2"
+                style={{
+                  backgroundColor: "#4285F4",
+                  borderRadius: "2px",
+                  boxShadow: "2px 2px 4px rgba(0,0,0,0.25)",
+                }}
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+                  alt="Google logo"
+                  className="mr-2"
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                  }}
+                />
+                Sign in with Google
+              </button>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default Login;
