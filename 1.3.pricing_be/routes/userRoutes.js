@@ -1,4 +1,3 @@
-// routes/userRoutes.js
 const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
@@ -10,25 +9,26 @@ router.post("/login", async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
-    // Find the user by username
     const user = await User.findOne({ username });
 
     if (!user) {
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
-    // Compare the provided password with the stored hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
-    // Create a user object to be returned, excluding the password field
     const userResponse = {
       _id: user._id,
       username: user.username,
       role: user.role,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
     };
 
     res.json({ user: userResponse });
@@ -39,25 +39,54 @@ router.post("/login", async (req, res, next) => {
 
 // Register
 router.post("/register", async (req, res, next) => {
-  const { username, password, role } = req.body;
+  const {
+    username,
+    password,
+    role,
+    fullName,
+    email,
+    phone,
+    address,
+    googleId,
+    picture,
+  } = req.body;
 
   try {
-    // Check if the username is already taken
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ error: "Username already exists" });
+    let existingUser,
+      hashedPassword = "";
+
+    if (googleId) {
+      existingUser = await User.findOne({ googleId });
+    } else {
+      existingUser = await User.findOne({ username });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (existingUser) {
+      return res.json({
+        message: "User already exists",
+        userId: existingUser._id,
+      });
+    }
 
-    // Create a new user with role
-    const newUser = new User({ username, password: hashedPassword, role });
+    if (!googleId) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
 
-    // Save the user to the database
-    await newUser.save();
+    const newUser = new User({
+      username,
+      password: hashedPassword,
+      role,
+      fullName,
+      email,
+      phone,
+      address,
+      googleId,
+      picture,
+    });
 
-    res.json({ message: "Registration successful" });
+    const savedUser = await newUser.save();
+
+    res.json({ message: "Registration successful", userId: savedUser._id });
   } catch (error) {
     next(error);
   }
@@ -68,23 +97,22 @@ router.get("/users/:userId", async (req, res, next) => {
   const { userId } = req.params;
 
   try {
-    // Find the user by ID
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Return the user information
-    const { username, role, fullName, email, phone, address } = user;
+    const { username, role, fullName, email, phone, address, picture } = user;
     res.json({
-      id: user._id,
+      _id: user._id,
       username,
       role,
       fullName,
       email,
       phone,
       address,
+      picture,
     });
   } catch (error) {
     next(error);
@@ -98,14 +126,12 @@ router.put("/users/:userId/update", async (req, res, next) => {
     req.body;
 
   try {
-    // Find the user by ID
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Update the user fields if provided
     if (username) {
       user.username = username;
     }
@@ -129,7 +155,6 @@ router.put("/users/:userId/update", async (req, res, next) => {
       user.address = address;
     }
 
-    // Save the updated user to the database
     await user.save();
 
     res.json({ message: "User updated successfully" });
