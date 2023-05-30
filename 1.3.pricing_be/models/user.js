@@ -8,13 +8,18 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
   },
   role: {
     type: String,
     enum: ["staff", "customer"],
     default: "customer",
   },
+  fullName: String,
+  email: String,
+  phone: String,
+  address: String,
+  googleId: String,
+  picture: String,
 });
 
 const User = mongoose.model("User", userSchema);

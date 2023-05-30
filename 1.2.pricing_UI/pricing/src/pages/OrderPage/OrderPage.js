@@ -42,7 +42,6 @@ class OrderPage extends Component {
   };
 
   handleTabListChange = (event, newValue) => {
-    console.log("tablist is change", newValue);
     this.setState({ tab: newValue, currentPage: 1 }, () => {
       this.filteredOrdersUpdate();
     });
@@ -50,7 +49,6 @@ class OrderPage extends Component {
 
   filteredOrdersUpdate = () => {
     const { ordersPerPage, orders, tab } = this.state;
-    console.log("tab", tab);
     let filteredOrders = orders;
     if (tab === "Pending") {
       filteredOrders = orders.filter((order) => order.status === "Pending");

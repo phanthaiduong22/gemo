@@ -52,7 +52,14 @@ app.use(passport.session());
 connectDB();
 
 // Middleware
-app.use(cors({ origin: "*" }));
+if (process.env.NODE_ENV === "production") {
+  // Code specific to production environment
+  app.use(cors({ origin: "https://restaurant.duongphan.com" }));
+} else {
+  // Code for other environments (e.g., development, testing)
+  app.use(cors({ origin: "*" }));
+}
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(logger);
@@ -67,6 +74,11 @@ app.use("/api", orderRoutes);
 app.use(errorHandler);
 
 const port = process.env.PORT || 8005;
+
+app.get("/helloworld", (req, res) => {
+  const message = `Hello, world! Server is running on port ${port}`;
+  res.send(message);
+});
 
 // Start the server
 app.listen(port, () => {

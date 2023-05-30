@@ -7,7 +7,6 @@ const initialState = {
 const alertReducer = (state = initialState, action) => {
   switch (action.type) {
     case "SHOW_ALERT":
-      console.log("SHOW_ALERT", action.payload);
       return {
         show: true,
         message: action.payload.message,

@@ -87,8 +87,6 @@ class Cart extends Component {
     const { cart } = this.props;
     const { items } = cart;
 
-    console.log("cart: ", cart);
-
     return (
       <Modal
         show={this.state.isModalOpen}

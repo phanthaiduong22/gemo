@@ -63,6 +63,8 @@ class Register extends React.Component {
         showSuccess: true,
         successText: "Registration successful!",
       });
+
+      console.log("Registration successful", response.status);
     } catch (error) {
       console.error("Error during registration:", error);
       let errorMessage = "Registration failed";

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShoppingCart, faBell } from "@fortawesome/free-solid-svg-icons";
+import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
 import { Navigate } from "react-router-dom";
 import Cart from "../Cart/Cart";
 import gemoLogo from "../../images/gemologo.png";
@@ -10,12 +10,10 @@ class CustomNavbar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: null,
       isModalOpen: false,
+      user: JSON.parse(localStorage.getItem("user")),
     };
   }
-
-  componentDidMount = () => {};
 
   handleLogout = () => {
     localStorage.removeItem("user");
@@ -27,11 +25,12 @@ class CustomNavbar extends Component {
   };
 
   render() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user == null) {
+    const { user } = this.state;
+    if (!user) {
       return <Navigate to="/login" />;
     }
-    const { isModalOpen, setOpenModal } = this.state;
+
+    const { isModalOpen } = this.state;
     return (
       <>
         <Navbar bg="light" expand="lg" className="mb-4">
@@ -50,19 +49,20 @@ class CustomNavbar extends Component {
               <Nav className="me-auto mb-2 mb-lg-0">
                 <Nav.Link href="/menu">Menu</Nav.Link>
                 <Nav.Link href="/orders">Orders</Nav.Link>
+                <Nav.Link href="/profile">Profile</Nav.Link>
               </Nav>
             </Navbar.Collapse>
             <div className="d-flex align-items-center">
-              <a
+              <button
                 className="text-reset me-3"
                 onClick={() => {
                   this.setOpenModal(true);
                 }}
               >
                 <FontAwesomeIcon icon={faShoppingCart} />
-              </a>
+              </button>
               <NavDropdown title={user.username} id="basic-nav-dropdown">
-                <NavDropdown.Item href="#action1">{user.role}</NavDropdown.Item>
+                <NavDropdown.Item href="/profile">Profile</NavDropdown.Item>
                 <NavDropdown.Item href="#action2" onClick={this.handleLogout}>
                   Logout
                 </NavDropdown.Item>

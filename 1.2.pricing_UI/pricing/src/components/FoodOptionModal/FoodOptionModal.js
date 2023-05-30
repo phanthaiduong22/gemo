@@ -22,7 +22,7 @@ class FoodOptionModal extends React.Component {
     price: 0,
     showError: false,
     errorText: "",
-    image: this.props.item.image
+    image: this.props.item.image,
   };
 
   componentDidMount() {
@@ -127,7 +127,7 @@ class FoodOptionModal extends React.Component {
             <img
               className={tw`object-cover w-30 h-20 transition duration-300 transform hover:scale-110`}
               src={item.image || sandwichImage}
-              alt="Item Image"
+              alt="item"
             />
             <h2 className={tw`ml-4 text-2xl font-bold`}>Additional Options</h2>
           </div>
