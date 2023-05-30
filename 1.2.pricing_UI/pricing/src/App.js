@@ -9,6 +9,7 @@ import OrderPage from "./pages/OrderPage/OrderPage";
 import store from "./redux/store";
 import CustomAlert from "../src/components/CustomAlert/CustomAlert";
 import { IntlProvider } from "react-intl";
+import UserProfile from "./pages/UserProfile/UserProfile";
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
             <Route path="register" element={<Register />} />
             <Route path="menu" element={<MenuPage />} />
             <Route path="orders" element={<OrderPage />} />
+            <Route path="profile" element={<UserProfile />} />
           </Routes>
         </IntlProvider>
       </div>
