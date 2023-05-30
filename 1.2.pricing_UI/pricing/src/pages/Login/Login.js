@@ -120,12 +120,12 @@ const Login = () => {
       });
   };
 
-  const handleLogout = () => {
-    googleLogout(); // Call the googleLogout function
-    setGoogleUser(null);
-    setUser(null);
-    localStorage.removeItem("user");
-  };
+  // const handleLogout = () => {
+  //   googleLogout(); // Call the googleLogout function
+  //   setGoogleUser(null);
+  //   setUser(null);
+  //   localStorage.removeItem("user");
+  // };
 
   return (
     <div className="container">
