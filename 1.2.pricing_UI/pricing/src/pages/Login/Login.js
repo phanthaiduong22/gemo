@@ -30,8 +30,6 @@ const Login = () => {
           `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${googleUser.access_token}`
         )
         .then((res) => {
-          console.log(res.data);
-
           const { email, picture, id, name } = res.data;
 
           const newUser = {
@@ -47,7 +45,6 @@ const Login = () => {
           axios
             .post(`${backendUrl}/register`, newUser)
             .then((response) => {
-              console.log(response.data);
               const user = {
                 ...newUser,
                 _id: response.data.userId, // Store _id in the user object

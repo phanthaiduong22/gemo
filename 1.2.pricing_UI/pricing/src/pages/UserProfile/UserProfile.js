@@ -62,7 +62,7 @@ class UserProfilePage extends React.Component {
       }
     } catch (error) {
       // this.props.showAlert("error", "Failed to fetch user information");
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -169,16 +169,16 @@ class UserProfilePage extends React.Component {
             <div className="col-lg-4">
               <div className="card mb-4">
                 <div className="card-body text-center">
-                  {!picture && picture !== "" ? (
+                  {!picture || picture === "" ? (
                     <img
-                      src={picture}
+                      src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
                       alt="avatar"
                       className="rounded-circle img-fluid"
                       style={{ width: "150px" }}
                     />
                   ) : (
                     <img
-                      src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
+                      src={picture}
                       alt="avatar"
                       className="rounded-circle img-fluid"
                       style={{ width: "150px" }}

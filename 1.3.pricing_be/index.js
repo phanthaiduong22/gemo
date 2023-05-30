@@ -39,6 +39,11 @@ app.use(errorHandler);
 
 const port = process.env.PORT || 8005;
 
+app.get("/helloworld", (req, res) => {
+  const message = `Hello, world! Server is running on port ${port}`;
+  res.send(message);
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
