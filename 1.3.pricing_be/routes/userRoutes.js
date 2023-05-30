@@ -63,4 +63,79 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
+// Get User Info
+router.get("/users/:userId", async (req, res, next) => {
+  const { userId } = req.params;
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Return the user information
+    const { username, role, fullName, email, phone, address } = user;
+    res.json({
+      id: user._id,
+      username,
+      role,
+      fullName,
+      email,
+      phone,
+      address,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Update User
+router.put("/users/:userId/update", async (req, res, next) => {
+  const { userId } = req.params;
+  const { username, password, role, fullName, email, phone, address } =
+    req.body;
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Update the user fields if provided
+    if (username) {
+      user.username = username;
+    }
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+    }
+    if (role) {
+      user.role = role;
+    }
+    if (fullName) {
+      user.fullName = fullName;
+    }
+    if (email) {
+      user.email = email;
+    }
+    if (phone) {
+      user.phone = phone;
+    }
+    if (address) {
+      user.address = address;
+    }
+
+    // Save the updated user to the database
+    await user.save();
+
+    res.json({ message: "User updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

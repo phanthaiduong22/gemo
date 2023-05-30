@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
     enum: ["staff", "customer"],
     default: "customer",
   },
+  fullName: String,
+  email: String,
+  phone: String,
+  address: String,
 });
 
 const User = mongoose.model("User", userSchema);
