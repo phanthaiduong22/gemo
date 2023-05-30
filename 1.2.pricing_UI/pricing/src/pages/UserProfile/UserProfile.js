@@ -156,7 +156,6 @@ class UserProfilePage extends React.Component {
   render() {
     const { username, role, fullName, email, phone, address, picture } =
       this.state.user;
-    console.log(picture);
     const { isEditing, isEmailEditable } = this.state;
 
     return (
@@ -170,7 +169,7 @@ class UserProfilePage extends React.Component {
             <div className="col-lg-4">
               <div className="card mb-4">
                 <div className="card-body text-center">
-                  {picture !== "" ? (
+                  {!picture && picture !== "" ? (
                     <img
                       src={picture}
                       alt="avatar"
