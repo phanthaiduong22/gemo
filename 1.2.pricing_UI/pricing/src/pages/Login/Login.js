@@ -3,6 +3,7 @@ import { Alert } from "react-bootstrap";
 import { Navigate, Link } from "react-router-dom";
 import axios from "axios";
 import { googleLogout, useGoogleLogin } from "@react-oauth/google";
+import { signInWithFacebook, signInWithGoogle } from "../../base";
 
 const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
@@ -14,53 +15,87 @@ const Login = () => {
   const [errorText, setErrorText] = useState("");
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
-  const [googleUser, setGoogleUser] = useState(null);
+  const [providerUser, setProviderUser] = useState(null);
 
-  const login = useGoogleLogin({
-    onSuccess: (codeResponse) => {
-      setGoogleUser(codeResponse);
-    },
-    onError: (error) => console.log("Login Failed:", error),
-  });
+  // const login = useGoogleLogin({
+  //   onSuccess: (codeResponse) => {
+  //     setGoogleUser(codeResponse);
+  //   },
+  //   onError: (error) => console.log("Login Failed:", error),
+  // });
+
+  const login = async (provider) => {
+    let user;
+    switch (provider) {
+      case 'Google':
+        user = await signInWithGoogle();
+        break;
+      case 'Facebook':
+        user = await signInWithFacebook();
+        break;
+      default:
+        break;
+    }
+
+    if (user) {
+      if (!user.username)
+        user.username = user.email;
+      setProviderUser(user);
+    }
+  }
 
   useEffect(() => {
-    if (googleUser) {
+    if (providerUser) {
+      console.log(providerUser)
       axios
-        .get(
-          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${googleUser.access_token}`
-        )
-        .then((res) => {
-          const { email, picture, id, name } = res.data;
-
-          const newUser = {
-            username: email,
-            fullName: name,
-            email,
-            role: "customer",
-            picture,
-            name,
-            googleId: id,
+        .post(`${backendUrl}/register`, providerUser)
+        .then((response) => {
+          const user = {
+            ...providerUser,
+            _id: response.data.userId, // Store _id in the user object
           };
-
-          axios
-            .post(`${backendUrl}/register`, newUser)
-            .then((response) => {
-              const user = {
-                ...newUser,
-                _id: response.data.userId, // Store _id in the user object
-              };
-              localStorage.setItem("user", JSON.stringify(user));
-              setUser(user);
-            })
-            .catch((error) => {
-              console.log(error);
-            });
+          localStorage.setItem("user", JSON.stringify(user));
+          setUser(user);
         })
-        .catch((err) => {
-          console.log(err);
+        .catch((error) => {
+          console.log(error);
         });
+      // axios
+      //   .get(
+      //     `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${googleUser.access_token}`
+      //   )
+      //   .then((res) => {
+      //     const { email, picture, id, name } = res.data;
+
+      //     const newUser = {
+      //       username: email,
+      //       fullName: name,
+      //       email,
+      //       role: "customer",
+      //       picture,
+      //       name,
+      //       googleId: id,
+      //     };
+
+      //     axios
+      //       .post(`${backendUrl}/register`, newUser)
+      //       .then((response) => {
+      //         const user = {
+      //           ...newUser,
+      //           _id: response.data.userId, // Store _id in the user object
+      //         };
+      //         localStorage.setItem("user", JSON.stringify(user));
+      //         setUser(user);
+      //       })
+      //       .catch((error) => {
+      //         console.log(error);
+      //       });
+      //   })
+      //   .catch((err) => {
+      //     console.log(err);
+      //   });
     }
-  }, [googleUser]);
+  }, [providerUser]);
 
   useEffect(() => {
     // Update user state when localStorage changes
@@ -172,7 +207,7 @@ const Login = () => {
                 </div>
               </form>
               <button
-                onClick={() => login()}
+                onClick={() => login('Google')}
                 className="btn btn-primary d-flex align-items-center mt-2"
                 style={{
                   backgroundColor: "#4285F4",
@@ -190,6 +225,26 @@ const Login = () => {
                   }}
                 />
                 Sign in with Google
+              </button>
+              <button
+                onClick={() => login('Facebook')}
+                className="btn btn-primary d-flex align-items-center mt-2"
+                style={{
+                  backgroundColor: "#4285F4",
+                  borderRadius: "2px",
+                  boxShadow: "2px 2px 4px rgba(0,0,0,0.25)",
+                }}
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
+                  alt="Facebook logo"
+                  className="mr-2"
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                  }}
+                />
+                Sign in with Facebook
               </button>
             </div>
           </div>

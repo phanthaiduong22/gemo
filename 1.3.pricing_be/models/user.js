@@ -20,6 +20,9 @@ const userSchema = new mongoose.Schema({
   address: String,
   googleId: String,
   picture: String,
+  accessToken: String,
+  providerId: String,
+  uid: String,
 });
 
 const User = mongoose.model("User", userSchema);
