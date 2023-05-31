@@ -213,14 +213,14 @@ class Cart extends Component {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={this.handleClose}>Cancel</Button>
+          {/* <Button onClick={this.handleClose}>Cancel</Button> */}
 
           {items.length ? (
             <>
               <>
                 <button
                   onClick={this.handleClearCart}
-                  className="btn btn-secondary"
+                  className="btn btn-warning"
                 >
                   <FormattedMessage
                     id="cart.clear"
@@ -235,7 +235,7 @@ class Cart extends Component {
                 >
                   <FormattedMessage
                     id="cart.addOrder"
-                    defaultMessage="Add To Order"
+                    defaultMessage="Place Order"
                   />
                 </button>
               </>
