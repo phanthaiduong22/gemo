@@ -153,7 +153,7 @@ class FoodOptionModal extends React.Component {
             )}
           </div>
 
-          {showError && <p className={tw`text-red-500 mb-4`}>{errorText}</p>}
+          {showError && <p className={tw`text-yellow-500 mb-4`}>{errorText}</p>}
 
           <div className={tw`flex justify-end items-center mt-4 space-x-4`}>
             <div className={tw`text-lg font-bold`}>

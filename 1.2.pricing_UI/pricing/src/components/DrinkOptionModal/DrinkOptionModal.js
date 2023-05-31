@@ -185,7 +185,8 @@ class DrinkOptionModal extends React.Component {
 
   render() {
     const { open, onClose, item } = this.props;
-    const { showError, errorText } = this.state;
+    const { showError, errorText, size, type, chocolateSaucePumps } =
+      this.state;
 
     if (!open) {
       return null;
@@ -205,7 +206,7 @@ class DrinkOptionModal extends React.Component {
             <h2 className={tw`ml-4 text-2xl font-bold`}>Additional Options</h2>
           </div>
           {showError && (
-            <div className={tw`bg-red-500 text-white p-4 rounded`}>
+            <div className={tw`bg-yellow-500 text-white p-4 rounded`}>
               {errorText}
             </div>
           )}
@@ -213,38 +214,46 @@ class DrinkOptionModal extends React.Component {
           <div className={tw`mb-4`}>
             <label className={tw`mr-2`}>Type:</label>
             <div className={tw`flex items-center`}>
-              {Object.keys(TYPE_ADJUSTMENTS).map((type) => (
-                <label key={type} className={tw`mr-4 flex items-center`}>
-                  <input
-                    type="radio"
-                    name="type"
-                    value={type}
-                    checked={this.state.type === type}
-                    onChange={this.handleOptionChange}
-                    className={tw`form-radio h-4 w-4 mr-2`}
-                  />
-                  {type}
-                </label>
-              ))}
+              {Object.keys(TYPE_ADJUSTMENTS).map((type) => {
+                const isDisabled = size === "L" && type === "Hot";
+                return (
+                  <label key={type} className={tw`mr-4 flex items-center`}>
+                    <input
+                      type="radio"
+                      name="type"
+                      value={type}
+                      checked={this.state.type === type}
+                      onChange={this.handleOptionChange}
+                      disabled={isDisabled}
+                      className={tw`form-radio h-4 w-4 mr-2`}
+                    />
+                    {type}
+                  </label>
+                );
+              })}
             </div>
           </div>
 
           <div className={tw`mb-4`}>
             <label className={tw`mr-2`}>Size:</label>
             <div className={tw`flex items-center`}>
-              {Object.keys(SIZE_ADJUSTMENTS).map((size) => (
-                <label key={size} className={tw`mr-4 flex items-center`}>
-                  <input
-                    type="radio"
-                    name="size"
-                    value={size}
-                    checked={this.state.size === size}
-                    onChange={this.handleOptionChange}
-                    className={tw`form-radio h-4 w-4 mr-2`}
-                  />
-                  {size}
-                </label>
-              ))}
+              {Object.keys(SIZE_ADJUSTMENTS).map((size) => {
+                const isDisabled = size === "L" && this.state.type === "Hot";
+                return (
+                  <label key={size} className={tw`mr-4 flex items-center`}>
+                    <input
+                      type="radio"
+                      name="size"
+                      value={size}
+                      checked={this.state.size === size}
+                      onChange={this.handleOptionChange}
+                      disabled={isDisabled}
+                      className={tw`form-radio h-4 w-4 mr-2`}
+                    />
+                    {size}
+                  </label>
+                );
+              })}
             </div>
           </div>
 
@@ -288,16 +297,26 @@ class DrinkOptionModal extends React.Component {
             <div className={tw`flex items-center`}>
               <button
                 onClick={() => this.handleChocolateSaucePumpUpdate(-1)}
-                className={tw`bg-gray-200 text-gray-700 px-2 py-1 rounded-l`}
+                disabled={chocolateSaucePumps === 0 || type !== "Hot"}
+                className={tw`bg-gray-200 text-gray-700 px-2 py-1 rounded-l ${
+                  chocolateSaucePumps === 0 || type !== "Hot"
+                    ? "cursor-not-allowed"
+                    : ""
+                }`}
               >
                 -
               </button>
               <div className={tw`form-input px-2 w-16 text-center`}>
-                {this.state.chocolateSaucePumps}
+                {chocolateSaucePumps}
               </div>
               <button
                 onClick={() => this.handleChocolateSaucePumpUpdate(1)}
-                className={tw`bg-gray-200 text-gray-700 px-2 py-1 rounded-r`}
+                disabled={type !== "Hot" || chocolateSaucePumps === 6}
+                className={tw`bg-gray-200 text-gray-700 px-2 py-1 rounded-r ${
+                  type !== "Hot" || chocolateSaucePumps === 6
+                    ? "cursor-not-allowed"
+                    : ""
+                }`}
               >
                 +
               </button>
