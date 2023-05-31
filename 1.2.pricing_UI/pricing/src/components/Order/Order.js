@@ -100,7 +100,10 @@ class Order extends Component {
     } catch (error) {
       // Show error alert
       console.log(error);
-      this.props.showAlert("danger", `Error recreating order: ${error.response.data.message}`);
+      this.props.showAlert(
+        "danger",
+        `Error recreating order: ${error.response.data.message}`
+      );
     }
   };
 
@@ -138,26 +141,23 @@ class Order extends Component {
       <div>
         <div key={order._id} className="col-lg-10 col-xl-12 p-6 mb-4">
           <div className="card">
-            <div className="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 className="text-muted mb-0">Order #{order._id}</h5>
-              <h4 className="text-primary mb-0">
+            <div className="card-header bg-light d-flex flex-wrap justify-content-between align-items-center">
+              <h5 className="text-muted mb-2 mb-lg-0">Order #{order._id}</h5>
+              <h4 className="text-primary mb-0 flex-grow-1">
                 Ordered by {order.username}
-              </h4>{" "}
+              </h4>
             </div>
+
             <div className="card-body">
               <div className="card mb-4">
                 <div className="card-body">
                   {items.map((item) => (
                     <div className="row border rounded mb-2" key={item._id}>
-                      <div className="col-md-2">
-                        <div className="image-container">
-                          <img
-                            src={this.renderItemImage(item)}
-                            className="img-fluid image-item"
-                            alt="Item"
-                          />
-                        </div>
-                      </div>
+                      <img
+                        src={this.renderItemImage(item)}
+                        className="image-item"
+                        alt="Item"
+                      />
                       <div className="col-md-10 mt-2 text-left">
                         <div className="text-muted mb-0 fs-4">
                           <h2 className="fw-bold fs-6">
@@ -222,7 +222,7 @@ class Order extends Component {
                     <>
                       {order.status === "Pending" && (
                         <button
-                          className="btn btn-warning"
+                          className="btn btn-warning m-2"
                           onClick={() =>
                             this.updateOrderStatus(order._id, "In Progress")
                           }
@@ -232,7 +232,7 @@ class Order extends Component {
                       )}
                       {order.status === "In Progress" && (
                         <button
-                          className="btn btn-success mr-2"
+                          className="btn btn-success m-2"
                           onClick={() =>
                             this.updateOrderStatus(order._id, "Completed")
                           }
@@ -243,7 +243,7 @@ class Order extends Component {
                       {order.status !== "Completed" &&
                         order.status !== "Cancelled" && (
                           <button
-                            className="btn btn-danger mr-2"
+                            className="btn btn-danger m-2"
                             onClick={() =>
                               this.updateOrderStatus(order._id, "Cancelled")
                             }
@@ -253,7 +253,7 @@ class Order extends Component {
                         )}
                       {order.status === "Completed" && (
                         <button
-                          className="btn btn-success mr-2"
+                          className="btn btn-success m-2"
                           onClick={() =>
                             this.recreateOrder(order._id, order.userId)
                           }
