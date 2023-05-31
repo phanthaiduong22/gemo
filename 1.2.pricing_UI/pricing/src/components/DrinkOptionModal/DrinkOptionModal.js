@@ -215,7 +215,10 @@ class DrinkOptionModal extends React.Component {
             <label className={tw`mr-2`}>Type:</label>
             <div className={tw`flex items-center`}>
               {Object.keys(TYPE_ADJUSTMENTS).map((type) => {
-                const isDisabled = size === "L" && type === "Hot";
+                const isDisabled =
+                  (size === "L" && type === "Hot") ||
+                  ((type == "Cold" || type == "Blended") &&
+                    chocolateSaucePumps > 0);
                 return (
                   <label key={type} className={tw`mr-4 flex items-center`}>
                     <input
