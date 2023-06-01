@@ -23,22 +23,64 @@ class OrderPage extends Component {
       currentPage: 1,
       ordersPerPage: 3,
       pageNumbers: 1,
-      user: JSON.parse(localStorage.getItem("user")),
+      user: {
+        _id: "",
+        username: "",
+        role: "",
+        fullName: "",
+        email: "",
+        phone: "",
+        address: "",
+        picture: "",
+      },
       tab: "Pending",
       displayOrdersKey: 1,
     };
   }
 
   componentDidMount = () => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    this.setState(
-      {
-        user: user,
-      },
-      () => {
-        this.getOrdersByUserId();
+    this.fetchUserData();
+  };
+
+  fetchUserData = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const response = await axios.get(`${backendUrl}/users/${user._id}`);
+
+      if (response.data) {
+        const {
+          _id,
+          username,
+          role,
+          fullName,
+          email,
+          phone,
+          address,
+          picture,
+        } = response.data;
+
+        this.setState(
+          {
+            user: {
+              _id,
+              username,
+              role,
+              fullName,
+              email,
+              phone,
+              address,
+              picture,
+            },
+          },
+          () => {
+            this.getOrdersByUserId();
+          }
+        );
       }
-    );
+    } catch (error) {
+      // this.props.showAlert("error", "Failed to fetch user information");
+      // console.log(error);
+    }
   };
 
   handleTabListChange = (event, newValue) => {
@@ -133,8 +175,7 @@ class OrderPage extends Component {
   };
 
   render() {
-    const { tab, displayOrders, displayOrdersKey } = this.state;
-    const user = JSON.parse(localStorage.getItem("user"));
+    const { tab, displayOrders, displayOrdersKey, user } = this.state;
     return (
       <div>
         {user === null ? <Navigate to="/login" /> : null}
@@ -166,6 +207,7 @@ class OrderPage extends Component {
                       <TabPanel value={tab} key={displayOrdersKey}>
                         <Order
                           order={order}
+                          user={user}
                           getOrdersByUserId={this.getOrdersByUserId}
                         />
                       </TabPanel>

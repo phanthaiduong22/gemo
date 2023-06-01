@@ -10,6 +10,9 @@ import store from "./redux/store";
 import CustomAlert from "../src/components/CustomAlert/CustomAlert";
 import { IntlProvider } from "react-intl";
 import UserProfile from "./pages/UserProfile/UserProfile";
+// import "@fortawesome/fontawesome-free/css/all.min.css";
+// import "bootstrap-css-only/css/bootstrap.min.css";
+// import "mdbreact/dist/css/mdb.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const App = () => {
