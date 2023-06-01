@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import ProgressBar from "../../components/ProgressBar/ProgressBar";
-
 import coffeeImage from "../../images/coffee.png";
 import milkteaImage from "../../images/milktea.png";
 import bagelImage from "../../images/bagel.png";
@@ -8,8 +7,10 @@ import sandwichImage from "../../images/sandwich.png";
 import axios from "axios";
 import "./Order.css";
 import { showAlert } from "../../redux/actions/alertActions";
-import { connect } from "react-redux"; // Import connect from react-redux
-import ConfirmModal from "../../components/ConfirmModal/ConfirmModal"; // Import ConfirmModal component
+import { connect } from "react-redux";
+import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
+import { Rating } from "react-simple-star-rating";
+import Comment from "./Comment/Comment";
 
 const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
@@ -20,12 +21,13 @@ class Order extends Component {
 
     this.state = {
       order: this.props.order,
-      user: JSON.parse(localStorage.getItem("user")),
+      user: this.props.user,
       confirmModal: {
         show: false,
         confirmOrderId: null,
-        confirmStatus: "", // Added state variable for the confirm status
+        confirmStatus: "",
       },
+      showCommentSection: false,
     };
   }
 
@@ -76,11 +78,9 @@ class Order extends Component {
           status,
         }
       );
-      // Show success alert
       this.props.showAlert("success", "Order status updated successfully");
       this.props.getOrdersByUserId();
     } catch (error) {
-      // Show error alert
       this.props.showAlert(
         "danger",
         `Error updating order status: ${error.message}`
@@ -94,13 +94,14 @@ class Order extends Component {
       await axios.post(
         `${backendUrl}/users/${userId}/orders/${orderId}/recreate`
       );
-      // Show success alert
       this.props.showAlert("success", "Order recreated successfully");
       this.props.getOrdersByUserId();
     } catch (error) {
-      // Show error alert
       console.log(error);
-      this.props.showAlert("danger", `Error recreating order: ${error.response.data.message}`);
+      this.props.showAlert(
+        "danger",
+        `Error recreating order: ${error.response.data.message}`
+      );
     }
   };
 
@@ -110,15 +111,12 @@ class Order extends Component {
 
     if (confirmed) {
       if (confirmStatus === "Recreate") {
-        // Call the backend API to recreate the order
         this.callRecreateOrder(confirmOrderId);
       } else {
-        // Call the backend API to update the order status
         this.callUpdateOrderStatus(confirmOrderId, confirmStatus);
       }
     }
 
-    // Reset the confirmModal state
     this.setState((prevState) => ({
       confirmModal: {
         ...prevState.confirmModal,
@@ -129,35 +127,64 @@ class Order extends Component {
     }));
   };
 
-  render() {
-    // const user = JSON.parse(localStorage.getItem("user"));
+  handleRating = async (rate) => {
     const { order, user } = this.state;
+    const { _id: orderId } = order;
+    const userId = user._id;
+
+    try {
+      await axios.put(`${backendUrl}/users/${userId}/orders/${orderId}/rate`, {
+        rating: rate,
+      });
+      this.setState({
+        order: {
+          ...order,
+          rating: rate,
+        },
+      });
+      this.props.showAlert("success", "Order rating updated successfully");
+    } catch (error) {
+      this.setState({ order: order });
+      this.props.showAlert(
+        "danger",
+        `Error updating order rating: ${error.response.data.message}`
+      );
+    }
+  };
+
+  toggleCommentSection = () => {
+    this.setState((prevState) => ({
+      showCommentSection: !prevState.showCommentSection,
+    }));
+  };
+
+  render() {
+    const { order, user, showCommentSection } = this.state;
     const { items } = order;
     const showConfirmModal = this.state.confirmModal.show;
+    const isCurrentUserOrderUser = user._id === order.user;
+
     return (
       <div>
         <div key={order._id} className="col-lg-10 col-xl-12 p-6 mb-4">
           <div className="card">
-            <div className="card-header bg-light d-flex justify-content-between align-items-center">
-              <h5 className="text-muted mb-0">Order #{order._id}</h5>
-              <h4 className="text-primary mb-0">
+            <div className="card-header bg-light d-flex flex-wrap justify-content-between align-items-center">
+              <h5 className="text-muted mb-2 mb-lg-0">Order #{order._id}</h5>
+              <h4 className="text-primary mb-0 flex-grow-1">
                 Ordered by {order.username}
-              </h4>{" "}
+              </h4>
             </div>
+
             <div className="card-body">
               <div className="card mb-4">
                 <div className="card-body">
                   {items.map((item) => (
                     <div className="row border rounded mb-2" key={item._id}>
-                      <div className="col-md-2">
-                        <div className="image-container">
-                          <img
-                            src={this.renderItemImage(item)}
-                            className="img-fluid image-item"
-                            alt="Item"
-                          />
-                        </div>
-                      </div>
+                      <img
+                        src={this.renderItemImage(item)}
+                        className="image-item"
+                        alt="Item"
+                      />
                       <div className="col-md-10 mt-2 text-left">
                         <div className="text-muted mb-0 fs-4">
                           <h2 className="fw-bold fs-6">
@@ -197,6 +224,19 @@ class Order extends Component {
                 </div>
               </div>
 
+              <Rating
+                onClick={isCurrentUserOrderUser}
+                initialValue={order.rating}
+                key={order.rating} // Add key prop to trigger re-render
+                readonly={!isCurrentUserOrderUser}
+              />
+              <button
+                className="btn btn-primary m-2"
+                onClick={this.toggleCommentSection}
+              >
+                {showCommentSection ? "Hide Comments" : "Add Comment"}
+              </button>
+
               <div className="d-flex justify-content-between pt-2">
                 <p className="fw-bold mb-0"></p>
                 <p className="text-muted mb-0">
@@ -222,7 +262,7 @@ class Order extends Component {
                     <>
                       {order.status === "Pending" && (
                         <button
-                          className="btn btn-warning"
+                          className="btn btn-warning m-2"
                           onClick={() =>
                             this.updateOrderStatus(order._id, "In Progress")
                           }
@@ -232,7 +272,7 @@ class Order extends Component {
                       )}
                       {order.status === "In Progress" && (
                         <button
-                          className="btn btn-success mr-2"
+                          className="btn btn-success m-2"
                           onClick={() =>
                             this.updateOrderStatus(order._id, "Completed")
                           }
@@ -243,7 +283,7 @@ class Order extends Component {
                       {order.status !== "Completed" &&
                         order.status !== "Cancelled" && (
                           <button
-                            className="btn btn-danger mr-2"
+                            className="btn btn-danger m-2"
                             onClick={() =>
                               this.updateOrderStatus(order._id, "Cancelled")
                             }
@@ -253,10 +293,8 @@ class Order extends Component {
                         )}
                       {order.status === "Completed" && (
                         <button
-                          className="btn btn-success mr-2"
-                          onClick={() =>
-                            this.recreateOrder(order._id, order.userId)
-                          }
+                          className="btn btn-success m-2"
+                          onClick={() => this.recreateOrder(order._id)}
                         >
                           Order Again
                         </button>
@@ -277,9 +315,7 @@ class Order extends Component {
                       {order.status === "Completed" && (
                         <button
                           className="btn btn-success mr-2"
-                          onClick={() =>
-                            this.recreateOrder(order._id, order.userId)
-                          }
+                          onClick={() => this.recreateOrder(order._id)}
                         >
                           Order Again
                         </button>
@@ -303,6 +339,7 @@ class Order extends Component {
               </div>
             </div>
           </div>
+          {showCommentSection && <Comment user={user} orderId={order._id} />}
         </div>
       </div>
     );
