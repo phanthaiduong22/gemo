@@ -169,7 +169,9 @@ router.put("/users/:userId/orders/:orderId/rate", async (req, res, next) => {
     );
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+      return res
+        .status(404)
+        .json({ message: "Invalid user to update order rating" });
     }
 
     return res.json({ message: "Order rating updated successfully", order });
@@ -214,8 +216,6 @@ router.post(
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-
-      console.log(user.picture);
 
       const comment = {
         user: userId,

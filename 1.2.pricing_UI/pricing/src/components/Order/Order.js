@@ -136,12 +136,18 @@ class Order extends Component {
       await axios.put(`${backendUrl}/users/${userId}/orders/${orderId}/rate`, {
         rating: rate,
       });
-      this.setState({ order: { ...order, rating: rate } });
+      this.setState({
+        order: {
+          ...order,
+          rating: rate,
+        },
+      });
       this.props.showAlert("success", "Order rating updated successfully");
     } catch (error) {
+      this.setState({ order: order });
       this.props.showAlert(
         "danger",
-        `Error updating order rating: ${error.message}`
+        `Error updating order rating: ${error.response.data.message}`
       );
     }
   };
@@ -156,6 +162,7 @@ class Order extends Component {
     const { order, user, showCommentSection } = this.state;
     const { items } = order;
     const showConfirmModal = this.state.confirmModal.show;
+    const isCurrentUserOrderUser = user._id === order.user;
 
     return (
       <div>
@@ -217,8 +224,12 @@ class Order extends Component {
                 </div>
               </div>
 
-              <Rating onClick={this.handleRating} initialValue={order.rating} />
-
+              <Rating
+                onClick={isCurrentUserOrderUser}
+                initialValue={order.rating}
+                key={order.rating} // Add key prop to trigger re-render
+                readonly={!isCurrentUserOrderUser}
+              />
               <button
                 className="btn btn-primary m-2"
                 onClick={this.toggleCommentSection}
