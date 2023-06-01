@@ -45,6 +45,14 @@ router.get("/users/:userId/orders", async (req, res, next) => {
       orders = await Order.find();
     } else if (userRole === "customer") {
       orders = await Order.find({ user: userId });
+    } else if (userRole === "barista") {
+      orders = await Order.find({
+        $or: [
+          { status: "Pending" },
+          { assignedUser: userId },
+          { user: userId },
+        ],
+      });
     } else {
       throw new Error("Invalid user role");
     }
@@ -56,7 +64,7 @@ router.get("/users/:userId/orders", async (req, res, next) => {
 });
 
 // Update order status
-router.put("/users/:userId/orders/:orderId/status", async (req, res) => {
+router.put("/users/:userId/orders/:orderId/status", async (req, res, next) => {
   const { orderId, userId } = req.params;
   const { status } = req.body;
 
@@ -88,7 +96,7 @@ router.put("/users/:userId/orders/:orderId/status", async (req, res) => {
       }
       order.status = status;
       await order.save();
-    } else if (user.role === "staff") {
+    } else if (user.role === "staff" || user.role === "barista") {
       const validStatusTransitions = {
         Pending: ["In Progress", "Cancelled"],
         "In Progress": ["Completed", "Cancelled"],
@@ -99,6 +107,11 @@ router.put("/users/:userId/orders/:orderId/status", async (req, res) => {
         validStatusTransitions[order.status].includes(status)
       ) {
         order.status = status;
+        const assignedUser = await User.findById(userId);
+        if (!assignedUser) {
+          return res.status(404).json({ message: "Assigned user not found" });
+        }
+        order.assignedUser = userId;
         await order.save();
       } else {
         return res.status(400).json({ message: "Invalid status for staff" });

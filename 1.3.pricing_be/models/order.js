@@ -99,6 +99,11 @@ const orderSchema = new mongoose.Schema({
       },
     },
   ],
+  assignedUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: false,
+  },
 });
 
 const Order = mongoose.model("Order", orderSchema);

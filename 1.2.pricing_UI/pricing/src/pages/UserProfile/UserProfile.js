@@ -226,6 +226,7 @@ class UserProfilePage extends React.Component {
                         >
                           <option value="customer">Customer</option>
                           <option value="staff">Staff</option>
+                          <option value="barista">Barista</option>
                         </select>
                       ) : (
                         <p className="text-muted mb-0">{role}</p>

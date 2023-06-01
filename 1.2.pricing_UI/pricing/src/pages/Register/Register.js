@@ -143,6 +143,7 @@ class Register extends React.Component {
                     >
                       <option value="customer">Customer</option>
                       <option value="staff">Staff</option>
+                      <option value="barista">Barista</option>
                     </select>
                   </div>
                   <div className="mt-4">

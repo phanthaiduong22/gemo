@@ -70,7 +70,7 @@ class Order extends Component {
   };
 
   callUpdateOrderStatus = async (orderId, status) => {
-    const userId = JSON.parse(localStorage.getItem("user"))._id;
+    const userId = this.state.user._id;
     try {
       await axios.put(
         `${backendUrl}/users/${userId}/orders/${orderId}/status`,
@@ -225,9 +225,9 @@ class Order extends Component {
               </div>
 
               <Rating
-                onClick={isCurrentUserOrderUser}
+                onClick={this.handleRating}
                 initialValue={order.rating}
-                key={order.rating} // Add key prop to trigger re-render
+                key={order.rating}
                 readonly={!isCurrentUserOrderUser}
               />
               <button
@@ -258,7 +258,7 @@ class Order extends Component {
             <div className="card-footer bg-primary text-white">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  {user.role === "staff" ? (
+                  {user.role === "staff" || "barista" ? (
                     <>
                       {order.status === "Pending" && (
                         <button
