@@ -154,4 +154,84 @@ router.post(
   }
 );
 
+// Update order rating
+router.put("/users/:userId/orders/:orderId/rate", async (req, res, next) => {
+  const { orderId, userId } = req.params;
+  const { rating } = req.body;
+
+  console.log(orderId, userId, rating);
+
+  try {
+    const order = await Order.findOneAndUpdate(
+      { _id: orderId, user: userId },
+      { rating },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    return res.json({ message: "Order rating updated successfully", order });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get comments for an order
+router.get(
+  "/users/:userId/orders/:orderId/comments",
+  async (req, res, next) => {
+    const { userId, orderId } = req.params;
+
+    try {
+      const order = await Order.findOne({ _id: orderId });
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      res.json(order.comments);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Add a comment to an order
+router.post(
+  "/users/:userId/orders/:orderId/comments",
+  async (req, res, next) => {
+    const { userId, orderId } = req.params;
+    const { content } = req.body;
+
+    try {
+      const order = await Order.findOne({ _id: orderId });
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      console.log(user.picture);
+
+      const comment = {
+        user: userId,
+        username: user.username, // Include the username in the comment
+        picture: user.picture,
+        content: content,
+      };
+
+      order.comments.push(comment);
+      await order.save();
+
+      res.json(order.comments);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 module.exports = router;

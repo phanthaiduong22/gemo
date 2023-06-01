@@ -54,6 +54,12 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  rating: {
+    type: Number,
+    required: false,
+    min: 0,
+    max: 5,
+  },
   cartPrice: {
     totalCartPrice: {
       type: Number,
@@ -68,6 +74,30 @@ const orderSchema = new mongoose.Schema({
       required: true,
     },
   },
+  comments: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      username: {
+        type: String,
+        required: true,
+      },
+      picture: {
+        type: String,
+      },
+      content: {
+        type: String,
+        required: true,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
 });
 
 const Order = mongoose.model("Order", orderSchema);

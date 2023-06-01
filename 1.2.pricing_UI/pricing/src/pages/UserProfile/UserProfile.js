@@ -140,12 +140,12 @@ class UserProfilePage extends React.Component {
       this.props.showAlert("error", "Invalid email address");
     }
 
-    if (fullName.trim() === "") {
+    if (fullName === "" && fullName.trim() === "") {
       isValid = false;
       this.props.showAlert("error", "Full name cannot be empty");
     }
 
-    if (address.trim() === "") {
+    if (fullName === "" && address.trim() === "") {
       isValid = false;
       this.props.showAlert("error", "Address cannot be empty");
     }
