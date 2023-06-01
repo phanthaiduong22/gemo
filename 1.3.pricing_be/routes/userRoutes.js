@@ -49,14 +49,16 @@ router.post("/register", async (req, res, next) => {
     address,
     googleId,
     picture,
+    providerId,
+    uid,
+    accessToken,
   } = req.body;
-
   try {
     let existingUser,
       hashedPassword = "";
 
-    if (googleId) {
-      existingUser = await User.findOne({ googleId });
+    if (providerId) {
+      existingUser = await User.findOne({ uid });
     } else {
       existingUser = await User.findOne({ username });
     }
@@ -68,7 +70,7 @@ router.post("/register", async (req, res, next) => {
       });
     }
 
-    if (!googleId) {
+    if (!providerId) {
       hashedPassword = await bcrypt.hash(password, 10);
     }
 
@@ -82,6 +84,9 @@ router.post("/register", async (req, res, next) => {
       address,
       googleId,
       picture,
+      providerId,
+      uid,
+      accessToken,
     });
 
     const savedUser = await newUser.save();
@@ -159,8 +164,8 @@ router.put("/users/:userId/update", async (req, res, next) => {
 
     res.json({ message: "User updated successfully" });
   } catch (error) {
-    next(error);
+    next(error)
   }
-});
+})
 
 module.exports = router;

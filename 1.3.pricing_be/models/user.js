@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema({
   phone: String,
   address: String,
   googleId: String,
+  accessToken: String,
+  providerId: String,
+  uid: String,
   picture: {
     type: String,
     default:

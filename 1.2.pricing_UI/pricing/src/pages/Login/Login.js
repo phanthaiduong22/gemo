@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Alert } from "react-bootstrap";
 import { Navigate, Link } from "react-router-dom";
 import axios from "axios";
-import { useGoogleLogin } from "@react-oauth/google";
+import { signInWithProvider } from "../../base";
 
 const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -14,53 +14,42 @@ const Login = () => {
   const [errorText, setErrorText] = useState("");
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
 
-  const [googleUser, setGoogleUser] = useState(null);
+  const [providerUser, setProviderUser] = useState(null);
 
-  const login = useGoogleLogin({
-    onSuccess: (codeResponse) => {
-      setGoogleUser(codeResponse);
-    },
-    onError: (error) => console.log("Login Failed:", error),
-  });
+  const login = async (provider) => {
+    const res = await signInWithProvider(provider);
+    if (res.success) {
+      if (res.user) {
+        if (!res.user.username)
+          res.user.username = res.user.email;
+        setProviderUser(res.user);
+      }
+    } else {
+      setShowError(true);
+      if (res.code === 'auth/account-exists-with-different-credential') {
+        setErrorText("Email has already existed! Please try to login with another provider!");
+      } else setErrorText(res.code);
+    }
+  }
 
   useEffect(() => {
-    if (googleUser) {
+    if (providerUser) {
+      console.log(providerUser)
       axios
-        .get(
-          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${googleUser.access_token}`
-        )
-        .then((res) => {
-          const { email, picture, id, name } = res.data;
-
-          const newUser = {
-            username: email,
-            fullName: name,
-            email,
-            role: "customer",
-            picture,
-            name,
-            googleId: id,
+        .post(`${backendUrl}/register`, providerUser)
+        .then((response) => {
+          const user = {
+            ...providerUser,
+            _id: response.data.userId, // Store _id in the user object
           };
-
-          axios
-            .post(`${backendUrl}/register`, newUser)
-            .then((response) => {
-              const user = {
-                ...newUser,
-                _id: response.data.userId, // Store _id in the user object
-              };
-              localStorage.setItem("user", JSON.stringify(user));
-              setUser(user);
-            })
-            .catch((error) => {
-              console.log(error);
-            });
+          localStorage.setItem("user", JSON.stringify(user));
+          setUser(user);
         })
-        .catch((err) => {
-          console.log(err);
+        .catch((error) => {
+          console.log(error);
         });
     }
-  }, [googleUser]);
+  }, [providerUser]);
 
   useEffect(() => {
     // Update user state when localStorage changes
@@ -117,13 +106,6 @@ const Login = () => {
       });
   };
 
-  // const handleLogout = () => {
-  //   googleLogout(); // Call the googleLogout function
-  //   setGoogleUser(null);
-  //   setUser(null);
-  //   localStorage.removeItem("user");
-  // };
-
   return (
     <div className="container">
       {user ? <Navigate to="/" /> : null}
@@ -172,7 +154,7 @@ const Login = () => {
                 </div>
               </form>
               <button
-                onClick={() => login()}
+                onClick={() => login('Google')}
                 className="btn btn-primary d-flex align-items-center mt-2"
                 style={{
                   backgroundColor: "#4285F4",
@@ -190,6 +172,26 @@ const Login = () => {
                   }}
                 />
                 Sign in with Google
+              </button>
+              <button
+                onClick={() => login('Facebook')}
+                className="btn btn-primary d-flex align-items-center mt-2"
+                style={{
+                  backgroundColor: "#4285F4",
+                  borderRadius: "2px",
+                  boxShadow: "2px 2px 4px rgba(0,0,0,0.25)",
+                }}
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
+                  alt="Facebook logo"
+                  className="mr-2"
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                  }}
+                />
+                Sign in with Facebook
               </button>
             </div>
           </div>

@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    const dbConnectionString = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
+    // const dbConnectionString = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
+    const dbConnectionString = 'mongodb://localhost:27017/gemo'
     const conn = await mongoose.connect(dbConnectionString, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
