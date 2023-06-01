@@ -59,7 +59,6 @@ const orderSchema = new mongoose.Schema({
     required: false,
     min: 0,
     max: 5,
-    default: 0,
   },
   cartPrice: {
     totalCartPrice: {
