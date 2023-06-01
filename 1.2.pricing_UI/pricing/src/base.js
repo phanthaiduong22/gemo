@@ -21,10 +21,21 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
-const signInWithFacebook = async () => {
+const signInWithProvider = async (provider) => {
     try {
-        const res = await signInWithPopup(auth, facebookProvider);
+        let res;
+        switch (provider) {
+            case "Facebook":
+                res = await signInWithPopup(auth, facebookProvider);
+                break;
+            case "Google":
+                res = await signInWithPopup(auth, googleProvider);
+                break;
+            default:
+                break;
+        }
         const { accessToken,
+            username,
             displayName,
             email,
             phoneNumber,
@@ -34,6 +45,7 @@ const signInWithFacebook = async () => {
         } = res.user;
         const user = {
             accessToken,
+            username,
             fullName: displayName,
             email,
             phone: phoneNumber,
@@ -41,30 +53,23 @@ const signInWithFacebook = async () => {
             providerId: providerData[0].providerId,
             uid
         }
-        return user;
+        return {
+            success: true,
+            user
+        };
     } catch (err) {
-        console.error(err);
-        alert(err.message);
+        return {
+            success: false,
+            code: err.code
+        }
     }
-};
-
-const signInWithGoogle = async () => {
-    try {
-        const res = await signInWithPopup(auth, googleProvider);
-        const user = res.user;
-        return user;
-    } catch (err) {
-        console.error(err);
-        alert(err.message);
-    }
-};
+}
 
 const logout = () => {
     signOut(auth);
 };
 export {
     auth,
-    signInWithGoogle,
-    signInWithFacebook,
+    signInWithProvider,
     logout,
 };

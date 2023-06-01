@@ -4,7 +4,10 @@ const User = require("../models/user");
 
 const router = express.Router();
 
-router.get("/users", async (req, res, next) => {
+// Login
+router.post("/login", async (req, res, next) => {
+  const { username, password } = req.body;
+
   try {
     const user = await User.findOne({ username });
 
@@ -30,7 +33,7 @@ router.get("/users", async (req, res, next) => {
 
     res.json({ user: userResponse });
   } catch (error) {
-    next(error)
+    next(error);
   }
 });
 

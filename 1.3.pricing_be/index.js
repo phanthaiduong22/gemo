@@ -7,7 +7,6 @@ const connectDB = require("./config/db");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./middleware/logger");
 const session  = require('express-session');
-const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 
@@ -66,7 +65,6 @@ app.use(logger);
 app.use(morgan("dev"));
 
 // Routes
-app.use("/", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", orderRoutes);
 

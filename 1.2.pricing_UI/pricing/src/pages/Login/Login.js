@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Alert } from "react-bootstrap";
 import { Navigate, Link } from "react-router-dom";
 import axios from "axios";
-import { googleLogout, useGoogleLogin } from "@react-oauth/google";
-import { signInWithFacebook, signInWithGoogle } from "../../base";
+import { signInWithProvider } from "../../base";
 
 const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
@@ -17,30 +16,19 @@ const Login = () => {
 
   const [providerUser, setProviderUser] = useState(null);
 
-  // const login = useGoogleLogin({
-  //   onSuccess: (codeResponse) => {
-  //     setGoogleUser(codeResponse);
-  //   },
-  //   onError: (error) => console.log("Login Failed:", error),
-  // });
-
   const login = async (provider) => {
-    let user;
-    switch (provider) {
-      case 'Google':
-        user = await signInWithGoogle();
-        break;
-      case 'Facebook':
-        user = await signInWithFacebook();
-        break;
-      default:
-        break;
-    }
-
-    if (user) {
-      if (!user.username)
-        user.username = user.email;
-      setProviderUser(user);
+    const res = await signInWithProvider(provider);
+    if (res.success) {
+      if (res.user) {
+        if (!res.user.username)
+          res.user.username = res.user.email;
+        setProviderUser(res.user);
+      }
+    } else {
+      setShowError(true);
+      if (res.code === 'auth/account-exists-with-different-credential') {
+        setErrorText("Email has already existed! Please try to login with another provider!");
+      } else setErrorText(res.code);
     }
   }
 
@@ -60,40 +48,6 @@ const Login = () => {
         .catch((error) => {
           console.log(error);
         });
-      // axios
-      //   .get(
-      //     `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${googleUser.access_token}`
-      //   )
-      //   .then((res) => {
-      //     const { email, picture, id, name } = res.data;
-
-      //     const newUser = {
-      //       username: email,
-      //       fullName: name,
-      //       email,
-      //       role: "customer",
-      //       picture,
-      //       name,
-      //       googleId: id,
-      //     };
-
-      //     axios
-      //       .post(`${backendUrl}/register`, newUser)
-      //       .then((response) => {
-      //         const user = {
-      //           ...newUser,
-      //           _id: response.data.userId, // Store _id in the user object
-      //         };
-      //         localStorage.setItem("user", JSON.stringify(user));
-      //         setUser(user);
-      //       })
-      //       .catch((error) => {
-      //         console.log(error);
-      //       });
-      //   })
-      //   .catch((err) => {
-      //     console.log(err);
-      //   });
     }
   }, [providerUser]);
 
@@ -151,13 +105,6 @@ const Login = () => {
         setErrorText(errorMessage);
       });
   };
-
-  // const handleLogout = () => {
-  //   googleLogout(); // Call the googleLogout function
-  //   setGoogleUser(null);
-  //   setUser(null);
-  //   localStorage.removeItem("user");
-  // };
 
   return (
     <div className="container">

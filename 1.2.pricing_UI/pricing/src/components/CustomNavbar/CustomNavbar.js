@@ -5,6 +5,7 @@ import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
 import { Navigate } from "react-router-dom";
 import Cart from "../Cart/Cart";
 import gemoLogo from "../../images/gemologo.png";
+import { logout } from "../../base";
 
 class CustomNavbar extends Component {
   constructor(props) {
@@ -16,6 +17,7 @@ class CustomNavbar extends Component {
   }
 
   handleLogout = () => {
+    logout();
     localStorage.removeItem("user");
     window.location.reload();
   };
