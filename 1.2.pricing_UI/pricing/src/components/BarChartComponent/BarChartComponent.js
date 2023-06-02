@@ -8,7 +8,7 @@ const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
 
 const BarChartComponent = ({ userId }) => {
-  console.log("userId", userId);
+  // console.log("userId", userId);
   const chartRef = useRef(null);
   const [fetchedRatings, setFetchedRatings] = useState([]);
   const [averageRatings, setAverageRatings] = useState([]);
@@ -60,7 +60,7 @@ const BarChartComponent = ({ userId }) => {
       const averageRating = averageRatings.find(
         (avg) => avg.product === item.product
       )?.rating; // Use optional chaining to handle undefined averageRating
-      return item.rating <= averageRating
+      return item.rating > averageRating
         ? "rgba(75, 192, 192, 0.2)"
         : "rgba(255, 99, 132, 0.2)";
     });
@@ -69,7 +69,7 @@ const BarChartComponent = ({ userId }) => {
       const averageRating = averageRatings.find(
         (avg) => avg.product === item.product
       )?.rating; // Use optional chaining to handle undefined averageRating
-      return item.rating <= averageRating
+      return item.rating > averageRating
         ? "rgba(75, 192, 192, 1)"
         : "rgba(255, 99, 132, 1)";
     });
@@ -89,10 +89,8 @@ const BarChartComponent = ({ userId }) => {
           {
             label: "Average Ratings",
             data: averageRatingValues,
-            type: "line",
             fill: false,
             borderColor: "orange",
-            tension: 1,
             borderWidth: 2, // Increase the borderWidth to make the line thicker
           },
         ],

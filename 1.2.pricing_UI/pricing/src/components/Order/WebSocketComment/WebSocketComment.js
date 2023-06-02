@@ -12,6 +12,9 @@ import {
 } from "mdb-react-ui-kit";
 import { Button, Container } from "react-bootstrap";
 
+const backendWsUrl =
+  process.env.REACT_APP_BACKEND_WS_URL || "ws://localhost:8005";
+
 const WebSocketComment = ({ user, orderId }) => {
   const [socket, setSocket] = useState(null);
   const [commentsData, setCommentsData] = useState([]);
@@ -20,16 +23,16 @@ const WebSocketComment = ({ user, orderId }) => {
 
   useEffect(() => {
     const connectWebSocket = () => {
-      const ws = new WebSocket(`ws://localhost:8005?orderId=${orderId}`);
+      const ws = new WebSocket(`${backendWsUrl}?orderId=${orderId}`);
 
       ws.onopen = () => {
-        console.log("Connected to server");
+        // console.log("Connected to server");
       };
 
       console.log(userId, orderId);
 
       ws.onmessage = (event) => {
-        console.log("Received message from server");
+        // console.log("Received message from server");
         const data = JSON.parse(event.data);
         const { orderId: receivedOrderId, comments } = data;
 

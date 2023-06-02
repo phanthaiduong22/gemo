@@ -103,6 +103,10 @@ const orderSchema = new mongoose.Schema({
     ref: "User",
     required: false,
   },
+  assignedUsername: {
+    type: String,
+    required: false,
+  },
 });
 
 const Order = mongoose.model("Order", orderSchema);

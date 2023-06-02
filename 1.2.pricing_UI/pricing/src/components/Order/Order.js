@@ -31,6 +31,10 @@ class Order extends Component {
     };
   }
 
+  componentDidMount = () => {
+    // setInterval(this.updateAllowFetchingNewOrders(), 5000);
+  };
+
   renderItemImage(item) {
     if (item.drink) {
       if (item.drink === "Coffee") {
@@ -48,25 +52,35 @@ class Order extends Component {
   }
 
   updateOrderStatus = async (orderId, status) => {
-    this.setState((prevState) => ({
-      confirmModal: {
-        ...prevState.confirmModal,
-        show: true,
-        confirmOrderId: orderId,
-        confirmStatus: status,
-      },
-    }));
+    this.setState(
+      (prevState) => ({
+        confirmModal: {
+          ...prevState.confirmModal,
+          show: true,
+          confirmOrderId: orderId,
+          confirmStatus: status,
+        },
+      }),
+      () => {
+        this.updateAllowFetchingNewOrders();
+      }
+    );
   };
 
   recreateOrder = (orderId) => {
-    this.setState((prevState) => ({
-      confirmModal: {
-        ...prevState.confirmModal,
-        show: true,
-        confirmOrderId: orderId,
-        confirmStatus: "Recreate",
-      },
-    }));
+    this.setState(
+      (prevState) => ({
+        confirmModal: {
+          ...prevState.confirmModal,
+          show: true,
+          confirmOrderId: orderId,
+          confirmStatus: "Recreate",
+        },
+      }),
+      () => {
+        this.updateAllowFetchingNewOrders();
+      }
+    );
   };
 
   callUpdateOrderStatus = async (orderId, status) => {
@@ -117,14 +131,19 @@ class Order extends Component {
       }
     }
 
-    this.setState((prevState) => ({
-      confirmModal: {
-        ...prevState.confirmModal,
-        show: false,
-        confirmOrderId: null,
-        confirmStatus: "",
-      },
-    }));
+    this.setState(
+      (prevState) => ({
+        confirmModal: {
+          ...prevState.confirmModal,
+          show: false,
+          confirmOrderId: null,
+          confirmStatus: "",
+        },
+      }),
+      () => {
+        this.updateAllowFetchingNewOrders();
+      }
+    );
   };
 
   handleRating = async (rate) => {
@@ -153,9 +172,21 @@ class Order extends Component {
   };
 
   toggleCommentSection = () => {
-    this.setState((prevState) => ({
-      showCommentSection: !prevState.showCommentSection,
-    }));
+    this.setState(
+      (prevState) => ({
+        showCommentSection: !prevState.showCommentSection,
+      }),
+      () => {
+        this.updateAllowFetchingNewOrders();
+      }
+    );
+  };
+
+  updateAllowFetchingNewOrders = () => {
+    const { showCommentSection, confirmModal } = this.state;
+    const { show } = confirmModal;
+    const allowFetchingOrders = !(showCommentSection || show);
+    this.props.updateAllowFetchingNewOrders(allowFetchingOrders);
   };
 
   render() {
@@ -170,9 +201,6 @@ class Order extends Component {
           <div className="card">
             <div className="card-header bg-light d-flex flex-wrap justify-content-between align-items-center">
               <h5 className="text-muted mb-2 mb-lg-0">Order #{order._id}</h5>
-              <h4 className="text-primary mb-0 flex-grow-1">
-                Ordered by {order.username}
-              </h4>
             </div>
 
             <div className="card-body">
@@ -225,7 +253,7 @@ class Order extends Component {
               </div>
 
               <div className="d-flex justify-content-between pt-2">
-                <p className="fw-bold mb-0"></p>
+                <p className="text-muted mb-0">Ordered by: {order.username}</p>
                 <p className="text-muted mb-0">
                   <span className="fw-bold me-4">Total</span> $
                   {order.cartPrice.totalCartPrice.toFixed(2)}
@@ -233,7 +261,14 @@ class Order extends Component {
               </div>
 
               <div className="d-flex justify-content-between pt-2">
-                <p className="text-muted mb-0"></p>
+                {order.assignedUsername ? (
+                  <p className="text-muted mb-0">
+                    Assigned to: {order.assignedUsername}
+                  </p>
+                ) : (
+                  <p className="text-muted mb-0"></p>
+                )}
+
                 <p className="text-muted mb-0">
                   <span className="fw-bold me-4">Tax</span>
                   {" $"}
@@ -245,8 +280,9 @@ class Order extends Component {
             <div className="card-footer bg-grey text-black">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  {user.role === "staff" || "barista" ? (
+                  {user.role === "staff" || user.role === "barista" ? (
                     <>
+                      {/* Staff or barista specific buttons */}
                       {order.status === "Pending" && (
                         <button
                           className="btn btn-warning m-2"
@@ -287,8 +323,9 @@ class Order extends Component {
                         </button>
                       )}
                     </>
-                  ) : (
+                  ) : user.role === "customer" ? (
                     <>
+                      {/* Customer specific buttons */}
                       {order.status === "Pending" && (
                         <button
                           className="btn btn-danger"
@@ -308,7 +345,7 @@ class Order extends Component {
                         </button>
                       )}
                     </>
-                  )}
+                  ) : null}
                 </div>
                 {showConfirmModal && (
                   <ConfirmModal
@@ -327,15 +364,20 @@ class Order extends Component {
             </div>
             <div className="card-footer bg-grey text-black">
               <div className="d-flex justify-content-between align-items-center ml-2">
-                <div>
-                  Rate this order:
-                  <Rating
-                    onClick={this.handleRating}
-                    initialValue={order.rating}
-                    key={order.rating}
-                    readonly={!isCurrentUserOrderUser}
-                  />
-                </div>
+                {order.status === "Completed" ? (
+                  <div>
+                    Rate this order:
+                    <Rating
+                      onClick={this.handleRating}
+                      initialValue={order.rating}
+                      key={order.rating}
+                      readonly={!isCurrentUserOrderUser}
+                    />
+                  </div>
+                ) : (
+                  <div></div>
+                )}
+
                 <button
                   className="btn btn-primary"
                   onClick={this.toggleCommentSection}

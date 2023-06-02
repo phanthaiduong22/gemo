@@ -10,7 +10,7 @@ import CustomNavbar from "../../components/CustomNavbar/CustomNavbar";
 import { Navigate } from "react-router-dom";
 
 const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
 
 class OrderPage extends Component {
   constructor(props) {
@@ -35,11 +35,23 @@ class OrderPage extends Component {
       },
       tab: "Pending",
       displayOrdersKey: 1,
+      allowFetchingNewOrders: true,
     };
   }
 
   componentDidMount = () => {
     this.fetchUserData();
+    setInterval(this.refreshOrders, 5000);
+  };
+
+  refreshOrders = () => {
+    if (this.state.allowFetchingNewOrders) {
+      this.getOrdersByUserId();
+    }
+  };
+
+  updateAllowFetchingNewOrders = (value) => {
+    this.setState({ allowFetchingNewOrders: value });
   };
 
   fetchUserData = async () => {
@@ -143,7 +155,6 @@ class OrderPage extends Component {
 
   renderPagination = () => {
     const { currentPage, pageNumbers } = this.state;
-
     return (
       <div className="mt-4">
         <ul className="pagination">
@@ -209,6 +220,9 @@ class OrderPage extends Component {
                           order={order}
                           user={user}
                           getOrdersByUserId={this.getOrdersByUserId}
+                          updateAllowFetchingNewOrders={
+                            this.updateAllowFetchingNewOrders
+                          }
                         />
                       </TabPanel>
                     </div>

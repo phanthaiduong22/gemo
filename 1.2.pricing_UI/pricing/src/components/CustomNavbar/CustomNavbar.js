@@ -50,7 +50,9 @@ class CustomNavbar extends Component {
                 <Nav.Link href="/menu">Menu</Nav.Link>
                 <Nav.Link href="/orders">Orders</Nav.Link>
                 <Nav.Link href="/profile">Profile</Nav.Link>
-                <Nav.Link href="/monitor">Monitoring</Nav.Link>
+                {user.role !== "customer" && (
+                  <Nav.Link href="/monitor">Monitoring</Nav.Link>
+                )}
               </Nav>
             </Navbar.Collapse>
             <div className="d-flex align-items-center">

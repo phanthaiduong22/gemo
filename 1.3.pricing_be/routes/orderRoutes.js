@@ -112,6 +112,7 @@ router.put("/users/:userId/orders/:orderId/status", async (req, res, next) => {
           return res.status(404).json({ message: "Assigned user not found" });
         }
         order.assignedUser = userId;
+        order.assignedUsername = assignedUser.username;
         await order.save();
       } else {
         return res.status(400).json({ message: "Invalid status for staff" });
