@@ -15,6 +15,7 @@ import MonitoringPage from "./pages/MonitoringPage/MonitoringPage";
 // import "bootstrap-css-only/css/bootstrap.min.css";
 // import "mdbreact/dist/css/mdb.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import WebSocketChat from "./pages/WebSocketChat/WebSocketChat";
 
 const App = () => {
   const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -34,6 +35,7 @@ const App = () => {
                 <Route path="orders" element={<OrderPage />} />
                 <Route path="profile" element={<UserProfile />} />
                 <Route path="monitor" element={<MonitoringPage />} />
+                <Route path="websocket" element={<WebSocketChat />} />
               </Routes>
             </React.StrictMode>
           </GoogleOAuthProvider>
