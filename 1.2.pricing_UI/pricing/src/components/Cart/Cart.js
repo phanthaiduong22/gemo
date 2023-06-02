@@ -1,91 +1,93 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { Button, Modal } from "react-bootstrap";
-import { FormattedMessage, injectIntl } from "react-intl";
-import axios from "axios";
-import "./Cart.css";
-import { HiOutlineTrash } from "react-icons/hi";
-import emptyCartImage from "../../images/empty_cart.png";
-import { removeFromCart, clearCart } from "../../redux/actions/cartActions";
-import { showAlert } from "../../redux/actions/alertActions";
+import "./Cart.css"
+
+import { FormattedMessage, injectIntl } from "react-intl"
+import React, { Component } from "react"
+import { clearCart, removeFromCart } from "../../redux/actions/cartActions"
+
+import { HiOutlineTrash } from "react-icons/hi"
+import { Modal } from "react-bootstrap"
+import axios from "axios"
+import { connect } from "react-redux"
+import emptyCartImage from "../../images/empty_cart.png"
+import { showAlert } from "../../redux/actions/alertActions"
 
 const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api"
 
 class Cart extends Component {
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
       isModalOpen: props.isModalOpen,
       user: JSON.parse(localStorage.getItem("user")),
-    };
+    }
   }
 
   handleClose = () => {
-    this.props.handleClose();
-  };
+    this.props.handleClose()
+  }
 
   handleRemoveCartItem = (itemId) => {
-    this.props.removeFromCart(itemId);
-  };
+    this.props.removeFromCart(itemId)
+  }
 
   handleClearCart = () => {
-    this.props.clearCart();
-  };
+    this.props.clearCart()
+  }
 
   handleAddToOrder = async () => {
-    const { user } = this.state;
-    const { cart } = this.props;
-    const order = cart;
+    const { user } = this.state
+    const { cart } = this.props
+    const order = cart
     const updatedOrder = {
       ...order,
       status: "Pending",
       items: order.items.map(({ id, ...item }) => item),
-    };
+    }
 
     try {
-      await axios.post(`${backendUrl}/users/${user._id}/orders`, updatedOrder);
+      await axios.post(`${backendUrl}/users/${user._id}/orders`, updatedOrder)
       // const createdOrder = response.data;
       // clear cart
-      this.handleClearCart();
+      this.handleClearCart()
 
       // show alert
-      this.props.showAlert("success", "Order created successfully");
+      this.props.showAlert("success", "Order created successfully")
     } catch (error) {
       // show error alert
-      this.props.showAlert("danger", `Error creating order: ${error.message}`);
+      this.props.showAlert("danger", `Error creating order: ${error.message}`)
     }
-  };
+  }
 
   formatDrinkTopping(item) {
-    let topping = "";
-    if (!item.hasWhippingCream && item.milkOption === "None") topping = "None";
+    let topping = ""
+    if (!item.hasWhippingCream && item.milkOption === "None") topping = "None"
     else if (!item.hasWhippingCream && item.milkOption !== "None")
-      topping = item.milkOption;
+      topping = item.milkOption
     else if (item.hasWhippingCream && item.milkOption === "None")
-      topping = "Whipping cream";
-    else topping = "Whipping cream, " + item.milkOption;
+      topping = "Whipping cream"
+    else topping = "Whipping cream, " + item.milkOption
 
     if (item.chocolateSaucePumps && item.chocolateSaucePumps > 0)
-      topping += ", Chocolate Sauce (" + item.chocolateSaucePumps + ")";
-    return topping;
+      topping += ", Chocolate Sauce (" + item.chocolateSaucePumps + ")"
+    return topping
   }
 
   formatFoodTopping(item) {
-    if (!item.selectedCustomizations.length) return "None";
-    let topping = "";
+    if (!item.selectedCustomizations.length) return "None"
+    let topping = ""
     for (let i = 0; i < item.selectedCustomizations.length; i++) {
       if (i !== item.selectedCustomizations.length - 1)
-        topping += item.selectedCustomizations[i] + ", ";
-      else topping += item.selectedCustomizations[i];
+        topping += item.selectedCustomizations[i] + ", "
+      else topping += item.selectedCustomizations[i]
     }
 
-    return topping;
+    return topping
   }
 
   render() {
-    const { cart } = this.props;
-    const { items } = cart;
+    const { cart } = this.props
+    const { items } = cart
 
     return (
       <Modal
@@ -245,18 +247,18 @@ class Cart extends Component {
           )}
         </Modal.Footer>
       </Modal>
-    );
+    )
   }
 }
 
 const mapStateToProps = (state) => ({
   cart: state.cart,
-});
+})
 
 const mapDispatchToProps = {
   removeFromCart,
   clearCart,
   showAlert,
-};
+}
 
-export default connect(mapStateToProps, mapDispatchToProps)(injectIntl(Cart));
+export default connect(mapStateToProps, mapDispatchToProps)(injectIntl(Cart))
