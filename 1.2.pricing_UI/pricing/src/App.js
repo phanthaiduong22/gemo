@@ -1,23 +1,22 @@
-import React from "react";
-import { Provider } from "react-redux";
-import { Route, Routes } from "react-router-dom";
-import "./App.css";
-import MenuPage from "./pages/MenuPage/MenuPage";
-import Login from "./pages/Login/Login";
-import Register from "./pages/Register/Register";
-import OrderPage from "./pages/OrderPage/OrderPage";
-import store from "./redux/store";
-import CustomAlert from "../src/components/CustomAlert/CustomAlert";
-import { IntlProvider } from "react-intl";
-import UserProfile from "./pages/UserProfile/UserProfile";
-import MonitoringPage from "./pages/MonitoringPage/MonitoringPage";
-// import "@fortawesome/fontawesome-free/css/all.min.css";
-// import "bootstrap-css-only/css/bootstrap.min.css";
-// import "mdbreact/dist/css/mdb.css";
-import { GoogleOAuthProvider } from "@react-oauth/google";
+import "./App.css"
+
+import { Route, Routes } from "react-router-dom"
+
+import CustomAlert from "../src/components/CustomAlert/CustomAlert"
+import { GoogleOAuthProvider } from "@react-oauth/google"
+import { IntlProvider } from "react-intl"
+import Login from "./pages/Login/Login"
+import MenuPage from "./pages/MenuPage/MenuPage"
+import MonitoringPage from "./pages/MonitoringPage/MonitoringPage"
+import OrderPage from "./pages/OrderPage/OrderPage"
+import { Provider } from "react-redux"
+import React from "react"
+import Register from "./pages/Register/Register"
+import UserProfile from "./pages/UserProfile/UserProfile"
+import store from "./redux/store"
 
 const App = () => {
-  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID
 
   return (
     <Provider store={store}>
@@ -40,7 +39,7 @@ const App = () => {
         </IntlProvider>
       </div>
     </Provider>
-  );
-};
+  )
+}
 
-export default App;
+export default App

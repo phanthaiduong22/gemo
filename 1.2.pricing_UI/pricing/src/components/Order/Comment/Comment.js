@@ -1,54 +1,52 @@
-import React, { useState, useEffect } from "react";
+import { Button, Container } from "react-bootstrap"
 import {
-  MDBBtn,
   MDBCard,
   MDBCardBody,
   MDBCardFooter,
   MDBCardImage,
   MDBCol,
-  MDBContainer,
   MDBRow,
   MDBTextArea,
-} from "mdb-react-ui-kit";
+} from "mdb-react-ui-kit"
+import React, { useEffect, useState } from "react"
 
-import { Button, Container } from "react-bootstrap";
-import axios from "axios";
+import axios from "axios"
 
 const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api"
 
 export default function Comment({ user, orderId }) {
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
-  const userId = user._id;
+  const [comments, setComments] = useState([])
+  const [newComment, setNewComment] = useState("")
+  const userId = user._id
 
   useEffect(() => {
-    fetchComments();
-  }, []);
+    fetchComments()
+  }, [])
 
   const fetchComments = async () => {
     try {
       const response = await axios.get(
         `${backendUrl}/users/${userId}/orders/${orderId}/comments`
-      );
-      setComments(response.data);
+      )
+      setComments(response.data)
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
   const addComment = async () => {
     try {
       const response = await axios.post(
         `${backendUrl}/users/${userId}/orders/${orderId}/comments`,
         { content: newComment }
-      );
-      setComments(response.data);
-      setNewComment("");
+      )
+      setComments(response.data)
+      setNewComment("")
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
   return (
     <section style={{ backgroundColor: "#eee" }}>
@@ -132,5 +130,5 @@ export default function Comment({ user, orderId }) {
         </MDBRow>
       </Container>
     </section>
-  );
+  )
 }

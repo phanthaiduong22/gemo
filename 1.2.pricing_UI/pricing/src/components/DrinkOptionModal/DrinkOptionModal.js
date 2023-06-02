@@ -1,34 +1,34 @@
-import React from "react";
-import { tw } from "twind";
+import React from "react"
+import { tw } from "twind"
 
 const TYPE_DRINKS_BASE_PRICES = {
   Coffee: 2,
   "Milk Tea": 2.25,
-};
+}
 
 const TYPE_ADJUSTMENTS = {
   Hot: 0,
   Cold: 0,
   Blended: 1,
-};
+}
 
 const SIZE_ADJUSTMENTS = {
   S: 0,
   M: 0.5,
   L: 1,
   XL: 1.5,
-};
+}
 
 const MILK_OPTION_ADJUSTMENTS = {
   None: 0,
   "Whole Milk": 0,
   "Almond Milk": 0.5,
-};
+}
 
-const WHIPPING_CREAM_ADJUSTMENT = 0.5;
+const WHIPPING_CREAM_ADJUSTMENT = 0.5
 
-const CHOCOLATE_SAUCE_PUMP_PRICE = 0.5;
-const MAX_CHOCOLATE_SAUCE_PUMPS = 6;
+const CHOCOLATE_SAUCE_PUMP_PRICE = 0.5
+const MAX_CHOCOLATE_SAUCE_PUMPS = 6
 
 class DrinkOptionModal extends React.Component {
   state = {
@@ -42,22 +42,22 @@ class DrinkOptionModal extends React.Component {
     showError: false,
     errorText: "",
     image: this.props.item.image,
-  };
+  }
 
   componentDidMount() {
-    this.setPrice();
+    this.setPrice()
   }
 
   handleOptionChange = (event) => {
-    const { name, value, checked } = event.target;
-    this.setState({ showError: false });
+    const { name, value, checked } = event.target
+    this.setState({ showError: false })
 
     if (name === "hasWhippingCream") {
-      this.setState({ hasWhippingCream: checked }, this.setPrice);
+      this.setState({ hasWhippingCream: checked }, this.setPrice)
     } else {
-      this.setState({ [name]: value }, this.setPrice);
+      this.setState({ [name]: value }, this.setPrice)
     }
-  };
+  }
 
   handleChocolateSaucePumpUpdate = (value) => {
     this.setState(
@@ -68,97 +68,95 @@ class DrinkOptionModal extends React.Component {
         ),
       }),
       this.setPrice
-    );
-  };
+    )
+  }
 
   handleConfirm = () => {
     if (!this.state.showError) {
-      this.props.onConfirm(this.state);
+      this.props.onConfirm(this.state)
     }
-  };
+  }
 
   getBasePriceByDrink() {
     if (TYPE_DRINKS_BASE_PRICES[this.state.drink] === undefined) {
       this.showError(
         `Invalid drink ${this.state.drink} selected. Please choose a valid drink.`
-      );
-      this.setState({ drink: "Coffee" });
-      return 0;
+      )
+      this.setState({ drink: "Coffee" })
+      return 0
     }
-    return TYPE_DRINKS_BASE_PRICES[this.state.drink];
+    return TYPE_DRINKS_BASE_PRICES[this.state.drink]
   }
 
   getTypeAdjustment() {
     if (TYPE_ADJUSTMENTS[this.state.type] === undefined) {
       this.showError(
         `Invalid drink ${this.state.type} selected. Please choose a valid type.`
-      );
-      this.setState({ type: "Hot" });
-      return 0;
+      )
+      this.setState({ type: "Hot" })
+      return 0
     }
-    return TYPE_ADJUSTMENTS[this.state.type];
+    return TYPE_ADJUSTMENTS[this.state.type]
   }
 
   getSizeAdjustment() {
     if (this.state.size === "L" && this.state.type === "Hot") {
       this.showError(
         `Invalid size ${this.state.size} for ${this.state.type} drink. Please choose a valid size.`
-      );
-      this.setState({ size: "S" });
-      return 0;
+      )
+      this.setState({ size: "S" })
+      return 0
     }
     if (SIZE_ADJUSTMENTS[this.state.size] === undefined) {
-      this.showError(
-        "Invalid drink size selected. Please choose a valid size."
-      );
-      this.setState({ size: "S" });
-      return 0;
+      this.showError("Invalid drink size selected. Please choose a valid size.")
+      this.setState({ size: "S" })
+      return 0
     }
-    return SIZE_ADJUSTMENTS[this.state.size];
+    return SIZE_ADJUSTMENTS[this.state.size]
   }
 
   getWhippingCreamAdjustment() {
-    return this.state.hasWhippingCream ? WHIPPING_CREAM_ADJUSTMENT : 0;
+    return this.state.hasWhippingCream ? WHIPPING_CREAM_ADJUSTMENT : 0
   }
 
   getMilkOptionAdjustment() {
     if (MILK_OPTION_ADJUSTMENTS[this.state.milkOption] === undefined) {
       this.showError(
         `Invalid milk option: ${this.state.milkOption}. Please choose a valid option.`
-      );
-      this.setState({ milkOption: "None" });
-      return 0;
+      )
+      this.setState({ milkOption: "None" })
+      return 0
     }
-    return MILK_OPTION_ADJUSTMENTS[this.state.milkOption];
+    return MILK_OPTION_ADJUSTMENTS[this.state.milkOption]
   }
 
   getChocolateSauceAdjustment() {
     if (this.state.chocolateSaucePumps > 0 && this.state.type !== "Hot") {
       this.showError(
         `Chocolate sauce pumps cannot be added to a ${this.state.type} drink.`
-      );
-      this.setState({ chocolateSaucePumps: 0 });
-      return 0;
+      )
+      this.setState({ chocolateSaucePumps: 0 })
+      return 0
     }
     if (this.state.chocolateSaucePumps > MAX_CHOCOLATE_SAUCE_PUMPS) {
       this.showError(
         `Invalid number of chocolate sauce pumps: ${this.state.chocolateSaucePumps}. Please choose a valid number.`
-      );
-      this.setState({ chocolateSaucePumps: 0 });
-      return 0;
+      )
+      this.setState({ chocolateSaucePumps: 0 })
+      return 0
     }
     return this.state.chocolateSaucePumps <= 2
       ? 0
-      : (this.state.chocolateSaucePumps - 2) * CHOCOLATE_SAUCE_PUMP_PRICE;
+      : (this.state.chocolateSaucePumps - 2) * CHOCOLATE_SAUCE_PUMP_PRICE
   }
 
   setPrice() {
-    const basePrice = this.getBasePriceByDrink();
-    const typeAdjustment = this.getTypeAdjustment();
-    const sizeAdjustment = this.getSizeAdjustment();
-    const whippingCreamAdjustment = this.getWhippingCreamAdjustment();
-    const milkOptionAdjustment = this.getMilkOptionAdjustment();
-    const chocolateSauceAdjustment = this.getChocolateSauceAdjustment();
+    const basePrice = this.getBasePriceByDrink()
+    const typeAdjustment = this.getTypeAdjustment()
+    const sizeAdjustment = this.getSizeAdjustment()
+    const whippingCreamAdjustment = this.getWhippingCreamAdjustment()
+    const milkOptionAdjustment = this.getMilkOptionAdjustment()
+    const chocolateSauceAdjustment = this.getChocolateSauceAdjustment()
 
     const totalPrice =
       basePrice +
@@ -166,30 +164,29 @@ class DrinkOptionModal extends React.Component {
       sizeAdjustment +
       whippingCreamAdjustment +
       milkOptionAdjustment +
-      chocolateSauceAdjustment;
+      chocolateSauceAdjustment
 
     this.setState({ price: totalPrice }, () => {
       // this.props.onChange(this.state);
-    });
+    })
 
-    return totalPrice;
+    return totalPrice
   }
 
   showError(errorText) {
     this.setState({ showError: true, errorText }, () => {
       setTimeout(() => {
-        this.setState({ showError: false, errorText: "" });
-      }, 3000);
-    });
+        this.setState({ showError: false, errorText: "" })
+      }, 3000)
+    })
   }
 
   render() {
-    const { open, onClose, item } = this.props;
-    const { showError, errorText, size, type, chocolateSaucePumps } =
-      this.state;
+    const { open, onClose, item } = this.props
+    const { showError, errorText, size, type, chocolateSaucePumps } = this.state
 
     if (!open) {
-      return null;
+      return null
     }
 
     return (
@@ -217,8 +214,8 @@ class DrinkOptionModal extends React.Component {
               {Object.keys(TYPE_ADJUSTMENTS).map((type) => {
                 const isDisabled =
                   (size === "L" && type === "Hot") ||
-                  ((type == "Cold" || type == "Blended") &&
-                    chocolateSaucePumps > 0);
+                  ((type === "Cold" || type === "Blended") &&
+                    chocolateSaucePumps > 0)
                 return (
                   <label key={type} className={tw`mr-4 flex items-center`}>
                     <input
@@ -232,7 +229,7 @@ class DrinkOptionModal extends React.Component {
                     />
                     {type}
                   </label>
-                );
+                )
               })}
             </div>
           </div>
@@ -241,7 +238,7 @@ class DrinkOptionModal extends React.Component {
             <label className={tw`mr-2`}>Size:</label>
             <div className={tw`flex items-center`}>
               {Object.keys(SIZE_ADJUSTMENTS).map((size) => {
-                const isDisabled = size === "L" && this.state.type === "Hot";
+                const isDisabled = size === "L" && this.state.type === "Hot"
                 return (
                   <label key={size} className={tw`mr-4 flex items-center`}>
                     <input
@@ -255,7 +252,7 @@ class DrinkOptionModal extends React.Component {
                     />
                     {size}
                   </label>
-                );
+                )
               })}
             </div>
           </div>
@@ -347,8 +344,8 @@ class DrinkOptionModal extends React.Component {
           </div>
         </div>
       </div>
-    );
+    )
   }
 }
 
-export default DrinkOptionModal;
+export default DrinkOptionModal
