@@ -10,7 +10,7 @@ import CustomNavbar from "../../components/CustomNavbar/CustomNavbar";
 import { Navigate } from "react-router-dom";
 
 const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
 
 class OrderPage extends Component {
   constructor(props) {
@@ -155,7 +155,6 @@ class OrderPage extends Component {
 
   renderPagination = () => {
     const { currentPage, pageNumbers } = this.state;
-    console.log("allowFetchingNewOrders: ", this.state.allowFetchingNewOrders);
     return (
       <div className="mt-4">
         <ul className="pagination">

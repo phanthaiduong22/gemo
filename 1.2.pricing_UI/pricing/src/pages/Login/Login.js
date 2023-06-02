@@ -5,7 +5,7 @@ import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 
 const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
 
 const Login = () => {
   const [username, setUsername] = useState("");
