@@ -10,7 +10,7 @@ import { showAlert } from "../../redux/actions/alertActions";
 import { connect } from "react-redux";
 import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 import { Rating } from "react-simple-star-rating";
-import Comment from "./Comment/Comment";
+import WebSocketComment from "./WebSocketComment/WebSocketComment";
 
 const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
@@ -345,7 +345,9 @@ class Order extends Component {
               </div>
             </div>
           </div>
-          {showCommentSection && <Comment user={user} orderId={order._id} />}
+          {showCommentSection && (
+            <WebSocketComment user={user} orderId={order._id} />
+          )}
         </div>
       </div>
     );

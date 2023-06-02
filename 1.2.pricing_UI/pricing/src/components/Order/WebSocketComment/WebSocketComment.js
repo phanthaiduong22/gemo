@@ -10,43 +10,60 @@ import {
   MDBRow,
   MDBTextArea,
 } from "mdb-react-ui-kit";
-
 import { Button, Container } from "react-bootstrap";
-import axios from "axios";
 
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
-
-export default function Comment({ user, orderId }) {
-  const [comments, setComments] = useState([]);
+const WebSocketComment = ({ user, orderId }) => {
+  const [socket, setSocket] = useState(null);
+  const [commentsData, setCommentsData] = useState([]);
   const [newComment, setNewComment] = useState("");
   const userId = user._id;
 
   useEffect(() => {
-    fetchComments();
-  }, []);
+    const connectWebSocket = () => {
+      const ws = new WebSocket(`ws://localhost:8005?orderId=${orderId}`);
 
-  const fetchComments = async () => {
-    try {
-      const response = await axios.get(
-        `${backendUrl}/users/${userId}/orders/${orderId}/comments`
-      );
-      setComments(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+      ws.onopen = () => {
+        console.log("Connected to server");
+      };
 
-  const addComment = async () => {
-    try {
-      const response = await axios.post(
-        `${backendUrl}/users/${userId}/orders/${orderId}/comments`,
-        { content: newComment }
-      );
-      setComments(response.data);
+      console.log(userId, orderId);
+
+      ws.onmessage = (event) => {
+        console.log("Received message from server");
+        const data = JSON.parse(event.data);
+        const { orderId: receivedOrderId, comments } = data;
+
+        if (receivedOrderId === orderId) {
+          setCommentsData(comments);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log("Disconnected from server");
+      };
+
+      setSocket(ws);
+    };
+
+    connectWebSocket();
+
+    return () => {
+      if (socket) {
+        socket.close();
+      }
+    };
+  }, [orderId]);
+
+  const sendMessage = () => {
+    if (
+      socket &&
+      socket.readyState === WebSocket.OPEN &&
+      newComment &&
+      newComment.trim() !== ""
+    ) {
+      const data = { orderId, userId, comment: newComment };
+      socket.send(JSON.stringify(data));
       setNewComment("");
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -57,9 +74,9 @@ export default function Comment({ user, orderId }) {
           <MDBCol md="12" lg="10" xl="8">
             <MDBCard style={{ maxWidth: "100%" }}>
               <MDBCardBody>
-                {comments.length > 0 ? (
+                {commentsData.length > 0 ? (
                   <div>
-                    {comments.map((comment, index) => (
+                    {commentsData.map((comment, index) => (
                       <div
                         key={comment._id}
                         className="d-flex flex-start align-items-center"
@@ -89,7 +106,7 @@ export default function Comment({ user, orderId }) {
                             )}
                           </p>
                           <p className="pb-2">{comment.content}</p>
-                          {index !== comments.length - 1 && (
+                          {index !== commentsData.length - 1 && (
                             <hr className="my-3" />
                           )}
                         </div>
@@ -124,7 +141,7 @@ export default function Comment({ user, orderId }) {
                   />
                 </div>
                 <div className="float-end pt-1 ml-5">
-                  <Button onClick={addComment}>Post comment</Button>
+                  <Button onClick={sendMessage}>Post comment</Button>
                 </div>
               </MDBCardFooter>
             </MDBCard>
@@ -133,4 +150,6 @@ export default function Comment({ user, orderId }) {
       </Container>
     </section>
   );
-}
+};
+
+export default WebSocketComment;

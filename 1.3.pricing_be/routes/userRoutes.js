@@ -4,6 +4,11 @@ const User = require("../models/user");
 
 const baristaImage =
   "https://img.freepik.com/premium-vector/young-smiling-man-barista-wearing-apron-standing-whipped-milk-into-coffee-mug-coffee-shop-coffee-time-take-away-concept-3d-vector-people-character-illustrationcartoon-minimal-style_365941-811.jpg";
+const staffImage =
+  "https://www.pngall.com/wp-content/uploads/12/Avatar-Profile-Vector-No-Background.png";
+const customerImage =
+  "https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp";
+
 const router = express.Router();
 
 // Login
@@ -76,6 +81,10 @@ router.post("/register", async (req, res, next) => {
 
     if (role == "barista" && (picture == "" || picture == undefined)) {
       picture = baristaImage;
+    } else if (role == "staff" && (picture == "" || picture == undefined)) {
+      picture = staffImage;
+    } else if (role == "customer" && (picture == "" || picture == undefined)) {
+      picture = customerImage;
     }
 
     const newUser = new User({

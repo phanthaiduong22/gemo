@@ -170,12 +170,13 @@ class UserProfilePage extends React.Component {
               <div className="card mb-4">
                 <div className="card-body text-center">
                   {!picture || picture === "" ? (
-                    <img
-                      src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
-                      alt="avatar"
-                      className="rounded-circle img-fluid"
-                      style={{ width: "150px" }}
-                    />
+                    // <img
+                    //   src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
+                    //   alt="avatar"
+                    //   className="rounded-circle img-fluid"
+                    //   style={{ width: "150px" }}
+                    // />
+                    <></>
                   ) : (
                     <img
                       src={picture}
