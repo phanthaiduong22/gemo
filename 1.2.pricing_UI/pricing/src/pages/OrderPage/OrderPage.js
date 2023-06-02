@@ -35,11 +35,23 @@ class OrderPage extends Component {
       },
       tab: "Pending",
       displayOrdersKey: 1,
+      allowFetchingNewOrders: true,
     };
   }
 
   componentDidMount = () => {
     this.fetchUserData();
+    setInterval(this.refreshOrders, 5000);
+  };
+
+  refreshOrders = () => {
+    if (this.state.allowFetchingNewOrders) {
+      this.getOrdersByUserId();
+    }
+  };
+
+  updateAllowFetchingNewOrders = (value) => {
+    this.setState({ allowFetchingNewOrders: value });
   };
 
   fetchUserData = async () => {
@@ -143,7 +155,7 @@ class OrderPage extends Component {
 
   renderPagination = () => {
     const { currentPage, pageNumbers } = this.state;
-
+    console.log("allowFetchingNewOrders: ", this.state.allowFetchingNewOrders);
     return (
       <div className="mt-4">
         <ul className="pagination">
@@ -209,6 +221,9 @@ class OrderPage extends Component {
                           order={order}
                           user={user}
                           getOrdersByUserId={this.getOrdersByUserId}
+                          updateAllowFetchingNewOrders={
+                            this.updateAllowFetchingNewOrders
+                          }
                         />
                       </TabPanel>
                     </div>

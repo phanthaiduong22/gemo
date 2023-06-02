@@ -31,6 +31,9 @@ class Order extends Component {
     };
   }
 
+  componentDidMount = () => {
+    setInterval(this.updateAllowFetchingNewOrders(), 5000);
+  };
   renderItemImage(item) {
     if (item.drink) {
       if (item.drink === "Coffee") {
@@ -153,9 +156,21 @@ class Order extends Component {
   };
 
   toggleCommentSection = () => {
-    this.setState((prevState) => ({
-      showCommentSection: !prevState.showCommentSection,
-    }));
+    this.setState(
+      (prevState) => ({
+        showCommentSection: !prevState.showCommentSection,
+      }),
+      () => {
+        this.updateAllowFetchingNewOrders();
+      }
+    );
+  };
+
+  updateAllowFetchingNewOrders = () => {
+    const { showCommentSection, confirmModal } = this.state;
+    const { show } = confirmModal;
+    const allowFetchingOrders = !(showCommentSection || show);
+    this.props.updateAllowFetchingNewOrders(allowFetchingOrders);
   };
 
   render() {
