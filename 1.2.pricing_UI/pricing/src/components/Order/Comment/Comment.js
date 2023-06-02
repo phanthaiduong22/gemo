@@ -10,7 +10,8 @@ import {
   MDBRow,
   MDBTextArea,
 } from "mdb-react-ui-kit";
-import { Button } from "react-bootstrap";
+
+import { Button, Container } from "react-bootstrap";
 import axios from "axios";
 
 const backendUrl =
@@ -50,9 +51,9 @@ export default function Comment({ user, orderId }) {
   };
 
   return (
-    <section className="vh-100" style={{ backgroundColor: "#eee" }}>
-      <MDBContainer className="py-5" style={{ maxWidth: "1000px" }}>
-        <MDBRow className="justify-content-center">
+    <section style={{ backgroundColor: "#eee" }}>
+      <Container className="container-fluid" style={{ maxWidth: "100% " }}>
+        <MDBRow className="justify-content-center w-100">
           <MDBCol md="12" lg="10" xl="8">
             <MDBCard style={{ maxWidth: "100%" }}>
               <MDBCardBody>
@@ -129,7 +130,7 @@ export default function Comment({ user, orderId }) {
             </MDBCard>
           </MDBCol>
         </MDBRow>
-      </MDBContainer>
+      </Container>
     </section>
   );
 }

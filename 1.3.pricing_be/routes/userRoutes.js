@@ -2,6 +2,8 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 
+const baristaImage =
+  "https://img.freepik.com/premium-vector/young-smiling-man-barista-wearing-apron-standing-whipped-milk-into-coffee-mug-coffee-shop-coffee-time-take-away-concept-3d-vector-people-character-illustrationcartoon-minimal-style_365941-811.jpg";
 const router = express.Router();
 
 // Login
@@ -39,7 +41,7 @@ router.post("/login", async (req, res, next) => {
 
 // Register
 router.post("/register", async (req, res, next) => {
-  const {
+  let {
     username,
     password,
     role,
@@ -70,6 +72,10 @@ router.post("/register", async (req, res, next) => {
 
     if (!googleId) {
       hashedPassword = await bcrypt.hash(password, 10);
+    }
+
+    if (role == "barista" && (picture == "" || picture == undefined)) {
+      picture = baristaImage;
     }
 
     const newUser = new User({
@@ -160,6 +166,25 @@ router.put("/users/:userId/update", async (req, res, next) => {
     res.json({ message: "User updated successfully" });
   } catch (error) {
     next(error);
+  }
+});
+
+/// Barista
+
+router.get("/users/:userId/baristas", async (req, res) => {
+  try {
+    // Check if the requesting user has the "staff" role
+    const requestingUser = await User.findById(req.params.userId);
+    if (requestingUser.role !== "staff") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    // Find all users with the "barista" role and retrieve their IDs and names
+    const baristas = await User.find({ role: "barista" }, "_id username");
+
+    res.json(baristas);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

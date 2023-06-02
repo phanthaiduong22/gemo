@@ -59,7 +59,6 @@ const orderSchema = new mongoose.Schema({
     required: false,
     min: 0,
     max: 5,
-    default: 0,
   },
   cartPrice: {
     totalCartPrice: {
@@ -99,6 +98,11 @@ const orderSchema = new mongoose.Schema({
       },
     },
   ],
+  assignedUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: false,
+  },
 });
 
 const Order = mongoose.model("Order", orderSchema);

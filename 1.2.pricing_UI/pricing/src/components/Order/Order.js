@@ -70,7 +70,7 @@ class Order extends Component {
   };
 
   callUpdateOrderStatus = async (orderId, status) => {
-    const userId = JSON.parse(localStorage.getItem("user"))._id;
+    const userId = this.state.user._id;
     try {
       await axios.put(
         `${backendUrl}/users/${userId}/orders/${orderId}/status`,
@@ -224,19 +224,6 @@ class Order extends Component {
                 </div>
               </div>
 
-              <Rating
-                onClick={isCurrentUserOrderUser}
-                initialValue={order.rating}
-                key={order.rating} // Add key prop to trigger re-render
-                readonly={!isCurrentUserOrderUser}
-              />
-              <button
-                className="btn btn-primary m-2"
-                onClick={this.toggleCommentSection}
-              >
-                {showCommentSection ? "Hide Comments" : "Add Comment"}
-              </button>
-
               <div className="d-flex justify-content-between pt-2">
                 <p className="fw-bold mb-0"></p>
                 <p className="text-muted mb-0">
@@ -255,10 +242,10 @@ class Order extends Component {
               </div>
             </div>
 
-            <div className="card-footer bg-primary text-white">
+            <div className="card-footer bg-grey text-black">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  {user.role === "staff" ? (
+                  {user.role === "staff" || "barista" ? (
                     <>
                       {order.status === "Pending" && (
                         <button
@@ -336,6 +323,25 @@ class Order extends Component {
                     ${order.cartPrice.totalCartPriceAfterTax.toFixed(2)}
                   </span>
                 </h5>
+              </div>
+            </div>
+            <div className="card-footer bg-grey text-black">
+              <div className="d-flex justify-content-between align-items-center ml-2">
+                <div>
+                  Rate this order:
+                  <Rating
+                    onClick={this.handleRating}
+                    initialValue={order.rating}
+                    key={order.rating}
+                    readonly={!isCurrentUserOrderUser}
+                  />
+                </div>
+                <button
+                  className="btn btn-primary"
+                  onClick={this.toggleCommentSection}
+                >
+                  {showCommentSection ? "Hide Comments" : "Add Comment"}
+                </button>
               </div>
             </div>
           </div>
