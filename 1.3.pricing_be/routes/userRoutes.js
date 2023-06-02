@@ -169,4 +169,23 @@ router.put("/users/:userId/update", async (req, res, next) => {
   }
 });
 
+/// Barista
+
+router.get("/users/:userId/baristas", async (req, res) => {
+  try {
+    // Check if the requesting user has the "staff" role
+    const requestingUser = await User.findById(req.params.userId);
+    if (requestingUser.role !== "staff") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    // Find all users with the "barista" role and retrieve their IDs and names
+    const baristas = await User.find({ role: "barista" }, "_id username");
+
+    res.json(baristas);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 module.exports = router;

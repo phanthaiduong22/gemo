@@ -1,0 +1,9 @@
+/* MonitoringPage.css */
+
+.custom-modal-dialog {
+    width: 90vw ;   /* Occupy the 90% of the screen width */
+    width: 80% !important; /* Adjust the desired width of the modal */
+    max-width: 1200px !important; /* Adjust the desired max-width of the modal */
+    margin: 1.75rem auto !important;
+  }
+  
