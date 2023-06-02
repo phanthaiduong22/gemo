@@ -16,19 +16,17 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const Order = require("./models/order.js");
+const User = require("./models/user.js");
 
 // Connect to MongoDB
 connectDB();
 
 // Middleware
-if (process.env.NODE_ENV === "production") {
-  // Code specific to production environment
-  app.use(cors({ origin: "https://restaurant.duongphan.com" }));
-} else {
-  // Code for other environments (e.g., development, testing)
-  app.use(cors({ origin: "*" }));
-}
-
+const origin =
+  process.env.NODE_ENV === "production"
+    ? "https://restaurant.duongphan.com"
+    : "*";
+app.use(cors({ origin }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(logger);
@@ -44,58 +42,53 @@ const orderComments = {};
 
 // Handle WebSocket connections
 wss.on("connection", (ws, req) => {
-  // Extract the query parameters from the request URL
-  const { searchParams } = new URL(req.url, "http://localhost:8005");
-  const orderId = searchParams.get("orderId");
+  // Extract the orderId from query parameters
+  const params = new URLSearchParams(req.url.split("?")[1]);
+  const orderId = params.get("orderId");
 
-  // Handle incoming messages from the client
-  ws.on("message", (message) => {
-    const data = JSON.parse(message);
-    const { userId, comment } = data;
+  ws.on("message", async (message) => {
+    try {
+      const { userId, comment } = JSON.parse(message);
 
-    // Check if orderId, userId, and comment are provided
-    if (!orderId || !userId || !comment) {
-      console.error("Error updating order comments: Invalid data provided");
-      return;
+      if (!orderId || !userId || !comment) {
+        throw new Error("Invalid data provided");
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const newComment = {
+        user: userId,
+        username: user.username,
+        picture: user.picture,
+        content: comment,
+        createdAt: new Date(),
+      };
+
+      if (!orderComments[orderId]) {
+        orderComments[orderId] = [];
+      }
+      orderComments[orderId].push(newComment);
+
+      const updatedOrder = await Order.findByIdAndUpdate(
+        orderId,
+        { $push: { comments: newComment } },
+        { new: true }
+      );
+
+      if (!updatedOrder) {
+        throw new Error("Order not found");
+      }
+
+      broadcastComments(orderId, updatedOrder.comments);
+    } catch (error) {
+      console.error("Error updating order comments:", error);
     }
-
-    console.log(orderId, userId, comment);
-
-    // Update comments for the order
-    if (!orderComments[orderId]) {
-      orderComments[orderId] = [];
-    }
-    orderComments[orderId].push(comment);
-
-    // Store the comment in the database (example using Mongoose)
-    Order.findByIdAndUpdate(
-      orderId,
-      {
-        $push: {
-          comments: {
-            user: userId,
-            content: comment,
-          },
-        },
-      },
-      { new: true }
-    )
-      .then((updatedOrder) => {
-        if (updatedOrder) {
-          // Broadcast the updated comment data to all clients with the specific orderId
-          broadcastComments(orderId, orderComments[orderId]);
-        } else {
-          console.error("Error updating order comments: Order not found");
-        }
-      })
-      .catch((error) => {
-        console.error("Error updating order comments:", error);
-      });
   });
 
-  // Handle WebSocket connection close
   ws.on("close", () => {
-    // Clean up the WebSocket connection for the order
     if (orderConnections[orderId]) {
       const index = orderConnections[orderId].indexOf(ws);
       if (index !== -1) {
@@ -104,36 +97,31 @@ wss.on("connection", (ws, req) => {
     }
   });
 
-  // Store the WebSocket connection for the order
   if (!orderConnections[orderId]) {
     orderConnections[orderId] = [];
   }
   orderConnections[orderId].push(ws);
-});
 
-// Handle initial connection and send existing comments for the order
-wss.on("connection", (ws, req) => {
-  // Extract the query parameters from the request URL
-  const { searchParams } = new URL(req.url, "http://localhost:8005");
-  const orderId = searchParams.get("orderId");
-
-  // Retrieve the existing comments for the order from the database
-  Order.findById(orderId)
-    .then((order) => {
+  (async () => {
+    try {
+      const order = await Order.findById(orderId);
       if (order) {
-        const comments = order.comments.map((comment) => comment.content);
+        const comments = order.comments.map((comment) => ({
+          ...comment.toObject(),
+          _id: comment._id.toString(),
+        }));
         ws.send(JSON.stringify({ orderId, comments }));
       }
-    })
-    .catch((error) => {
+    } catch (error) {
       console.error("Error retrieving order comments:", error);
-    });
+    }
+  })();
 });
 
-// Broadcast the comment data to all connected clients for a specific order
 function broadcastComments(orderId, comments) {
   if (orderConnections[orderId]) {
     const message = JSON.stringify({ orderId, comments });
+    console.log(message);
     orderConnections[orderId].forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(message);
