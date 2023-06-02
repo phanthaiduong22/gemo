@@ -41,7 +41,7 @@ class OrderPage extends Component {
 
   componentDidMount = () => {
     this.fetchUserData();
-    setInterval(this.refreshOrders, 5000);
+    setInterval(this.refreshOrders, 3000);
   };
 
   refreshOrders = () => {

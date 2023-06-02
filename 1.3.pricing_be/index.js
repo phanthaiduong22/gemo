@@ -121,7 +121,6 @@ wss.on("connection", (ws, req) => {
 function broadcastComments(orderId, comments) {
   if (orderConnections[orderId]) {
     const message = JSON.stringify({ orderId, comments });
-    console.log(message);
     orderConnections[orderId].forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(message);
@@ -135,7 +134,7 @@ app.use(errorHandler);
 
 const port = process.env.PORT || 8005;
 
-app.get("/helloworld", (req, res) => {
+app.get("/", (req, res) => {
   const message = `Hello, world! Server is running on port ${port}`;
   res.send(message);
 });
