@@ -217,7 +217,7 @@ class DrinkOptionModal extends React.Component {
               {Object.keys(TYPE_ADJUSTMENTS).map((type) => {
                 const isDisabled =
                   (size === "L" && type === "Hot") ||
-                  ((type == "Cold" || type == "Blended") &&
+                  ((type === "Cold" || type === "Blended") &&
                     chocolateSaucePumps > 0);
                 return (
                   <label key={type} className={tw`mr-4 flex items-center`}>

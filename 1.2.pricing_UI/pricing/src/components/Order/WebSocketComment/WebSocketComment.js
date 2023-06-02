@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
-  MDBBtn,
   MDBCard,
   MDBCardBody,
   MDBCardFooter,
   MDBCardImage,
   MDBCol,
-  MDBContainer,
   MDBRow,
   MDBTextArea,
 } from "mdb-react-ui-kit";
