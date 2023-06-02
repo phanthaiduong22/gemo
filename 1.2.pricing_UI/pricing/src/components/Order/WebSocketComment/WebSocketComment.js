@@ -26,13 +26,13 @@ const WebSocketComment = ({ user, orderId }) => {
       const ws = new WebSocket(`${backendWsUrl}?orderId=${orderId}`);
 
       ws.onopen = () => {
-        // console.log("Connected to server");
+        console.log("Connected to server");
       };
 
       console.log(userId, orderId);
 
       ws.onmessage = (event) => {
-        // console.log("Received message from server");
+        console.log("Received message from server");
         const data = JSON.parse(event.data);
         const { orderId: receivedOrderId, comments } = data;
 
