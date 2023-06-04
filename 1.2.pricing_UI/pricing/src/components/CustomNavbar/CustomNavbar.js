@@ -80,7 +80,7 @@ class CustomNavbar extends Component {
             handleClose={() => this.setOpenModal(false)}
           />
         )}
-        <ChatBot />
+        <ChatBot user={this.state.user} />
       </>
     );
   }

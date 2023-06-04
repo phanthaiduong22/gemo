@@ -15,12 +15,10 @@ const BarChartComponent = ({ userId }) => {
 
   useEffect(() => {
     const fetchRatings = async () => {
-      console.log("fetching", userId);
       try {
         const response = await axios.get(
           `${backendUrl}/users/${userId}/rating`
         );
-        console.log(response.data);
         setFetchedRatings(response.data);
       } catch (error) {
         console.error("Error fetching ratings:", error);

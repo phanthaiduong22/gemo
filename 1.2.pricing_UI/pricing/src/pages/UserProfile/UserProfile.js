@@ -92,8 +92,6 @@ class UserProfilePage extends React.Component {
         address,
       };
 
-      console.log(user);
-
       try {
         const response = await axios.put(
           `${backendUrl}/users/${user._id}/update`,

@@ -4,7 +4,7 @@ import "./ChatBot.css";
 const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
 
-const ChatBot = () => {
+const ChatBot = ({ user }) => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
   const [showChatbot, setShowChatbot] = useState(false);
@@ -81,9 +81,7 @@ const ChatBot = () => {
                   {message.user === "User" ? (
                     <div className="user-message">
                       <img
-                        src={
-                          "https://img.freepik.com/premium-vector/robot-icon-bot-sign-design-chatbot-symbol-concept-voice-support-service-bot-online-support-bot-vector-stock-illustration_100456-34.jpg?w=2000"
-                        }
+                        src={user.picture}
                         alt="User"
                         className="user-avatar"
                       />

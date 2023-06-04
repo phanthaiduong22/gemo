@@ -64,9 +64,7 @@ class MenuPage extends React.Component {
           }
         }
       }
-      this.setState({ menuItems }, () => {
-        console.log("menuItems", this.state.menuItems);
-      });
+      this.setState({ menuItems }, () => {});
     } catch (error) {
       console.error(error);
     }
