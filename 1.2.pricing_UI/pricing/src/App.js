@@ -1,6 +1,6 @@
 import React from "react";
 import { Provider } from "react-redux";
-import { Route, Routes } from "react-router-dom";
+import { Route, RouterProvider, Routes } from "react-router-dom";
 import "./App.css";
 import MenuPage from "./pages/MenuPage/MenuPage";
 import Login from "./pages/Login/Login";
@@ -11,10 +11,12 @@ import CustomAlert from "../src/components/CustomAlert/CustomAlert";
 import { IntlProvider } from "react-intl";
 import UserProfile from "./pages/UserProfile/UserProfile";
 import MonitoringPage from "./pages/MonitoringPage/MonitoringPage";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import ChatBotPage from "./pages/ChatBotPage/ChatBotPage";
+
 // import "@fortawesome/fontawesome-free/css/all.min.css";
 // import "bootstrap-css-only/css/bootstrap.min.css";
 // import "mdbreact/dist/css/mdb.css";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const App = () => {
   const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -34,6 +36,7 @@ const App = () => {
                 <Route path="orders" element={<OrderPage />} />
                 <Route path="profile" element={<UserProfile />} />
                 <Route path="monitor" element={<MonitoringPage />} />
+                <Route path="chatbot" element={<ChatBotPage />} />
               </Routes>
             </React.StrictMode>
           </GoogleOAuthProvider>
