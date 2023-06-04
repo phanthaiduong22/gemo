@@ -6,9 +6,21 @@ const connectDB = require("./config/db");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./middleware/logger");
 const userRoutes = require("./routes/userRoutes");
-const orderRoutes = require("./routes/orderRoutes");
+const {
+  orderRoutes,
+  getOrderCommentsAndRatingsByAssignedUserId,
+} = require("./routes/orderRoutes");
 const WebSocket = require("ws");
 const http = require("http");
+const bodyParser = require("body-parser");
+
+const { Configuration, OpenAIApi } = require("openai");
+// console.log(process.env.OPENAI_API_KEY);
+const config = new Configuration({
+  apiKey: "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",
+});
+
+const openai = new OpenAIApi(config);
 
 dotenv.config();
 
@@ -26,6 +38,7 @@ const origin =
   process.env.NODE_ENV === "production"
     ? "https://restaurant.duongphan.com"
     : "*";
+app.use(bodyParser.json());
 app.use(cors({ origin }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -128,6 +141,65 @@ function broadcastComments(orderId, comments) {
     });
   }
 }
+
+app.post("/api/chat", async (req, res) => {
+  try {
+    const { assignedUserId, prompt } = req.body;
+
+    let messages = [];
+    const performance = await getOrderCommentsAndRatingsByAssignedUserId(
+      assignedUserId
+    );
+
+    const promptDictionary = {
+      "/performance": {
+        message: `Assume you are my manager, just tell the things, don't mention about data I provided. Below JSON is my cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. JSON: ${JSON.stringify(
+          performance
+        )}`,
+      },
+      "/rating": {
+        message: `Assume you are my manager, just tell the things, don't mention about data I provided. Focusing on my rating, DON't mentioning about comments/attitude. Below JSON is my cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. JSON: ${JSON.stringify(
+          performance
+        )}`,
+      },
+      "/comment": {
+        message: `Assume you are my manager, just tell the things, don't mention about data I provided. Focusing on my comment/attitude, DON't mentioning about rating. Below JSON is my cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. JSON: ${JSON.stringify(
+          performance
+        )}`,
+      },
+    };
+
+    if (prompt in promptDictionary) {
+      const { message } = promptDictionary[prompt];
+      messages.push({
+        role: "user",
+        content: message,
+      });
+    } else {
+      messages.push({
+        role: "user",
+        content: prompt,
+      });
+    }
+
+    const completion = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages,
+    });
+
+    const response = completion.data.choices[0].message.content;
+    res.json({ response });
+  } catch (error) {
+    console.error(error);
+    if (error.response) {
+      console.log(error.response.data);
+      res.status(error.response.status).json({ error: error.response.data });
+    } else {
+      console.log(error.message);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+});
 
 // Error handling middleware
 app.use(errorHandler);
