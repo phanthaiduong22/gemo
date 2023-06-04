@@ -27,8 +27,6 @@ const WebSocketComment = ({ user, orderId }) => {
         console.log("Connected to server");
       };
 
-      console.log(userId, orderId);
-
       ws.onmessage = (event) => {
         console.log("Received message from server");
         const data = JSON.parse(event.data);

@@ -8,6 +8,9 @@ import sandwichImage from "../../images/sandwich.png";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar.js";
 import { Navigate } from "react-router-dom";
 
+const backendUrl =
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
+
 class MenuPage extends React.Component {
   constructor(props) {
     super(props);
@@ -45,7 +48,27 @@ class MenuPage extends React.Component {
   componentDidMount() {
     const user = JSON.parse(localStorage.getItem("user"));
     this.setState({ user });
+    this.fetchItemRatings();
   }
+
+  fetchItemRatings = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/itemRating`); // Update the API endpoint
+      const ratings = await response.json();
+      const { menuItems } = this.state;
+      for (const rating of ratings) {
+        for (let i = 0; i < menuItems.length; i++) {
+          const item = menuItems[i];
+          if (rating.product === item.name) {
+            menuItems[i] = { ...item, rating: rating.rating };
+          }
+        }
+      }
+      this.setState({ menuItems }, () => {});
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   handleTabChange = (tab) => {
     this.setState({ currentTab: tab });

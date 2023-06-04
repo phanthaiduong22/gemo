@@ -5,6 +5,7 @@ import DrinkOptionModal from "../DrinkOptionModal/DrinkOptionModal";
 import FoodOptionModal from "../FoodOptionModal/FoodOptionModal";
 import { tw } from "twind";
 import { showAlert } from "../../redux/actions/alertActions";
+import { Rating } from "react-simple-star-rating";
 
 class Item extends React.Component {
   constructor(props) {
@@ -34,9 +35,8 @@ class Item extends React.Component {
   };
 
   render() {
-    const { showModal } = this.state;
+    const { showModal } = this.state; // Retrieve ratings from state
     const { item } = this.props;
-
     return (
       <>
         <div
@@ -67,8 +67,21 @@ class Item extends React.Component {
               alt={item.name}
             />
           </div>
+
           <div
-            className={tw`px-6 py-4 flex flex-col md:flex-row items-center justify-between`}
+            className={tw`px-6 py flex flex-col md:flex-row items-center justify-between`}
+          >
+            <div></div>
+            <Rating
+              emptyStyle={{ display: "flex" }}
+              fillStyle={{ display: "-webkit-inline-box" }}
+              className="mt-4"
+              initialValue={item.rating}
+              readonly={true}
+            />
+          </div>
+          <div
+            className={tw`px-6 py-2 flex flex-col md:flex-row items-center justify-between`}
           >
             <div>
               <div className={tw`font-bold text-xl mb-2`}>{item.name}</div>

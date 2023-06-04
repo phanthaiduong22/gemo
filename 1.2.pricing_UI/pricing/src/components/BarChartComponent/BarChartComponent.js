@@ -15,12 +15,10 @@ const BarChartComponent = ({ userId }) => {
 
   useEffect(() => {
     const fetchRatings = async () => {
-      console.log("fetching", userId);
       try {
         const response = await axios.get(
           `${backendUrl}/users/${userId}/rating`
         );
-        console.log(response.data);
         setFetchedRatings(response.data);
       } catch (error) {
         console.error("Error fetching ratings:", error);
@@ -60,7 +58,9 @@ const BarChartComponent = ({ userId }) => {
       const averageRating = averageRatings.find(
         (avg) => avg.product === item.product
       )?.rating; // Use optional chaining to handle undefined averageRating
-      return item.rating > averageRating
+      return item.rating === averageRating
+        ? "rgba(255, 255, 0, 0.2)" // Yellow color in rgba format (background)
+        : item.rating > averageRating
         ? "rgba(75, 192, 192, 0.2)"
         : "rgba(255, 99, 132, 0.2)";
     });
@@ -69,7 +69,9 @@ const BarChartComponent = ({ userId }) => {
       const averageRating = averageRatings.find(
         (avg) => avg.product === item.product
       )?.rating; // Use optional chaining to handle undefined averageRating
-      return item.rating > averageRating
+      return item.rating === averageRating
+        ? "rgba(255, 99, 132, 1)" // Yellow color in rgba format (border)
+        : item.rating > averageRating
         ? "rgba(75, 192, 192, 1)"
         : "rgba(255, 99, 132, 1)";
     });
