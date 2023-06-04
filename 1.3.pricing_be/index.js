@@ -14,14 +14,6 @@ const WebSocket = require("ws");
 const http = require("http");
 const bodyParser = require("body-parser");
 
-const { Configuration, OpenAIApi } = require("openai");
-// console.log(process.env.OPENAI_API_KEY);
-const config = new Configuration({
-  apiKey: "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",
-});
-
-const openai = new OpenAIApi(config);
-
 dotenv.config();
 
 const app = express();
@@ -29,6 +21,14 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 const Order = require("./models/order.js");
 const User = require("./models/user.js");
+
+const { Configuration, OpenAIApi } = require("openai");
+// console.log(process.env.OPENAI_API_KEY);
+const config = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const openai = new OpenAIApi(config);
 
 // Connect to MongoDB
 connectDB();
@@ -153,21 +153,27 @@ app.post("/api/chat", async (req, res) => {
 
     const promptDictionary = {
       "/performance": {
-        message: `Assume you are my manager, just tell the things, don't mention about data I provided. Below JSON is my cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. JSON: ${JSON.stringify(
+        message: `I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. Data: ${JSON.stringify(
           performance
         )}`,
       },
       "/rating": {
-        message: `Assume you are my manager, just tell the things, don't mention about data I provided. Focusing on my rating, DON't mentioning about comments/attitude. Below JSON is my cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. JSON: ${JSON.stringify(
+        message: `Focusing on my rating, DON't mentioning about comments/attitude. My cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. Data: ${JSON.stringify(
           performance
         )}`,
       },
       "/comment": {
-        message: `Assume you are my manager, just tell the things, don't mention about data I provided. Focusing on my comment/attitude, DON't mentioning about rating. Below JSON is my cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. JSON: ${JSON.stringify(
+        message: `Focusing on my comment/attitude, DON't mentioning about rating. My cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. Data: ${JSON.stringify(
           performance
         )}`,
       },
     };
+
+    messages.push({
+      role: "system",
+      content:
+        "You are manager of a cafeteria. Give barista evaluation based on their performance",
+    });
 
     if (prompt in promptDictionary) {
       const { message } = promptDictionary[prompt];
