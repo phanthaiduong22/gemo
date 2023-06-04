@@ -173,8 +173,6 @@ router.put("/users/:userId/orders/:orderId/rate", async (req, res, next) => {
   const { orderId, userId } = req.params;
   const { rating } = req.body;
 
-  console.log(orderId, userId, rating);
-
   try {
     const order = await Order.findOneAndUpdate(
       { _id: orderId, user: userId },
@@ -248,6 +246,58 @@ router.post(
   }
 );
 
+const calculateRatings = (orders) => {
+  const ratings = {
+    "Milk Tea": [],
+    Coffee: [],
+    Bagel: [],
+    Sandwich: [],
+  };
+
+  let totalRating = 0,
+    totalOrder = 0;
+
+  // Iterate through each order
+  orders.forEach((order) => {
+    // Iterate through each item in the order
+    order.items.forEach((item) => {
+      if (order.rating == 0) return;
+      const { drink, food } = item;
+
+      // Calculate the total rating for each specific item
+      if (drink && ratings.hasOwnProperty(drink)) {
+        ratings[drink].push(order.rating);
+      } else if (food && ratings.hasOwnProperty(food)) {
+        ratings[food].push(order.rating);
+      }
+    });
+
+    totalRating += order.rating;
+    totalOrder += 1;
+  });
+
+  // Calculate the average ratings for each specific item
+  const fetchedRatings = Object.entries(ratings).map(
+    ([product, productRatings]) => {
+      const averageRating =
+        productRatings.length > 0
+          ? productRatings.reduce((sum, rating) => sum + rating, 0) /
+            productRatings.length
+          : 0; // Set default value if no ratings available
+      return { product, rating: averageRating };
+    }
+  );
+
+  const averageRating = totalOrder > 0 ? totalRating / totalOrder : 0; // Set default value if no orders available
+
+  fetchedRatings.push({
+    product: "Average",
+    rating: averageRating,
+  });
+
+  return fetchedRatings;
+};
+
 // Calculate product ratings and average rating for a user's orders
 router.get("/users/:userId/rating", async (req, res, next) => {
   try {
@@ -256,52 +306,7 @@ router.get("/users/:userId/rating", async (req, res, next) => {
     // Find all orders assigned to the user and populate the 'items' field
     const orders = await Order.find({ assignedUser: userId }).populate("items");
 
-    const ratings = {
-      "Milk Tea": [],
-      Coffee: [],
-      Bagel: [],
-      Sandwich: [],
-    };
-
-    let totalRating = 0,
-      totalOrder = 0;
-
-    // Iterate through each order
-    orders.forEach((order) => {
-      if (!order.rating) {
-        return;
-      }
-
-      // Iterate through each item in the order
-      order.items.forEach((item) => {
-        const { drink, food } = item;
-
-        // Calculate the total rating for each specific item
-        if (drink && ratings.hasOwnProperty(drink)) {
-          ratings[drink].push(order.rating);
-        } else if (food && ratings.hasOwnProperty(food)) {
-          ratings[food].push(order.rating);
-        }
-      });
-
-      totalRating += order.rating;
-      totalOrder += 1;
-    });
-
-    // Calculate the average ratings for each specific item
-    const fetchedRatings = Object.entries(ratings).map(
-      ([product, productRatings]) => {
-        const averageRating =
-          productRatings.reduce((sum, rating) => sum + rating, 0) /
-          productRatings.length;
-        return { product, rating: averageRating };
-      }
-    );
-
-    fetchedRatings.push({
-      product: "Average",
-      rating: totalRating / totalOrder,
-    });
+    const fetchedRatings = calculateRatings(orders);
 
     res.json(fetchedRatings);
   } catch (error) {
@@ -317,48 +322,7 @@ router.get("/orders/rating", async (req, res, next) => {
       "items"
     );
 
-    const ratings = {
-      "Milk Tea": [],
-      Coffee: [],
-      Bagel: [],
-      Sandwich: [],
-    };
-
-    let totalRating = 0,
-      totalOrder = 0;
-
-    // Iterate through each order
-    orders.forEach((order) => {
-      // Iterate through each item in the order
-      order.items.forEach((item) => {
-        const { drink, food } = item;
-
-        // Calculate the total rating for each specific item
-        if (drink && ratings.hasOwnProperty(drink)) {
-          ratings[drink].push(order.rating);
-        } else if (food && ratings.hasOwnProperty(food)) {
-          ratings[food].push(order.rating);
-        }
-      });
-
-      totalRating += order.rating;
-      totalOrder += 1;
-    });
-
-    // Calculate the average ratings for each specific item
-    const fetchedRatings = Object.entries(ratings).map(
-      ([product, productRatings]) => {
-        const averageRating =
-          productRatings.reduce((sum, rating) => sum + rating, 0) /
-          productRatings.length;
-        return { product, rating: averageRating };
-      }
-    );
-
-    fetchedRatings.push({
-      product: "Average",
-      rating: totalRating / totalOrder,
-    });
+    const fetchedRatings = calculateRatings(orders);
 
     res.json(fetchedRatings);
   } catch (error) {
@@ -366,4 +330,85 @@ router.get("/orders/rating", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+const getOrderCommentsAndRatingsByAssignedUserId = async (assignedUserId) => {
+  try {
+    // Find all orders assigned to the user and populate the 'comments' and 'items' fields
+    const orders = await Order.find({ assignedUser: assignedUserId })
+      .populate("comments.user", ["username"])
+      .populate("items");
+
+    if (orders.length === 0) {
+      return {
+        comments: [],
+        ratings: [],
+      };
+    }
+
+    const fetchedRatings = calculateRatings(orders);
+    let assignedUsername;
+
+    let comments = [];
+    for (let i = 0; i < orders.length; i++) {
+      for (let j = 0; j < orders[i].comments.length; j++) {
+        const { user, picture, username, content } = orders[i].comments[j];
+        comments = [...comments, { username, content }];
+      }
+      assignedUsername = orders[i].assignedUsername;
+    }
+
+    const ratingOfAssignedUser = fetchedRatings.reduce(
+      (result, { product, rating }) => {
+        result[product] = rating;
+        return result;
+      },
+      {}
+    );
+
+    const allOrders = await Order.find({}).populate("items");
+    const allRatings = calculateRatings(allOrders);
+
+    const ratingOfAllBarista = allRatings.reduce(
+      (result, { product, rating }) => {
+        result[product] = rating;
+        return result;
+      },
+      {}
+    );
+
+    return {
+      assignedUsername,
+      comments,
+      ratingOfAssignedUser,
+      ratingOfAllBarista,
+    };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+// API route to get comments and ratings for assigned user's orders
+router.get("/users/:userId/comments-ratings", async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const result = await getOrderCommentsAndRatingsByAssignedUserId(userId);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/itemRating", async (req, res, next) => {
+  try {
+    const orders = await Order.find({}).populate("items");
+    const ratings = calculateRatings(orders);
+    res.json(ratings);
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = {
+  orderRoutes: router,
+  getOrderCommentsAndRatingsByAssignedUserId,
+};
