@@ -39,6 +39,12 @@ router.post("/login", async (req, res, next) => {
       expiresIn: "1h",
     });
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    });
+
     const userResponse = {
       _id: user._id,
       username: user.username,
@@ -50,10 +56,24 @@ router.post("/login", async (req, res, next) => {
       picture: user.picture,
     };
 
-    res.json({ user: userResponse, token });
+    res.json({ user: userResponse });
   } catch (error) {
     next(error);
   }
+});
+
+// Logout
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    path: "/",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+  });
+
+  // Perform any additional logout operations
+
+  res.status(200).json({ message: "Logout successful" });
 });
 
 // Register

@@ -9,6 +9,7 @@ const logger = require("./middleware/logger");
 const WebSocket = require("ws");
 const http = require("http");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 
 dotenv.config();
 
@@ -18,24 +19,38 @@ const wss = new WebSocket.Server({ server });
 const Order = require("./models/order.js");
 const User = require("./models/user.js");
 
-const userRoutes = require("./routes/userRoutes");
-const { orderRoutes } = require("./routes/orderRoutes");
-const chatBotRoutes = require("./routes/chatBotRoutes");
-
 // Connect to MongoDB
 connectDB();
 
 // Middleware
-const origin =
-  process.env.NODE_ENV === "production"
-    ? "https://restaurant.duongphan.com"
-    : "*";
+
+if (process.env.NODE_ENV === "production") {
+  app.use(morgan("combined"));
+  app.use(
+    cors({
+      origin: "https://restaurant.duongphan.com", // Replace with your production frontend domain
+      credentials: true,
+    })
+  );
+} else {
+  app.use(morgan("dev"));
+  app.use(
+    cors({
+      origin: "http://localhost:3000", // Replace with your development frontend domain
+      credentials: true,
+    })
+  );
+}
+
 app.use(bodyParser.json());
-app.use(cors({ origin }));
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(logger);
-app.use(morgan("dev"));
+
+const userRoutes = require("./routes/userRoutes");
+const { orderRoutes } = require("./routes/orderRoutes");
+const chatBotRoutes = require("./routes/chatBotRoutes");
 
 // Routes
 app.use("/api", userRoutes);
