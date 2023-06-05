@@ -6,6 +6,7 @@ import { Navigate } from "react-router-dom";
 import Cart from "../Cart/Cart";
 import gemoLogo from "../../images/gemologo.png";
 import ChatBot from "../ChatBot/ChatBot";
+import axios from "axios";
 
 class CustomNavbar extends Component {
   constructor(props) {
@@ -17,8 +18,25 @@ class CustomNavbar extends Component {
   }
 
   handleLogout = () => {
-    localStorage.removeItem("user");
-    window.location.reload();
+    axios
+      .post(`${process.env.REACT_APP_BACKEND_URL}/logout`, null, {
+        withCredentials: true,
+      })
+      .then(() => {
+        // Clear the token cookie from the client-side
+        document.cookie =
+          "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+        // Remove user from local storage or perform any additional cleanup
+        localStorage.removeItem("user");
+
+        // Redirect the user to the desired logout page or home page
+        window.location.href = "/";
+      })
+      .catch((error) => {
+        // Handle the error
+        console.log(error);
+      });
   };
 
   setOpenModal = (value) => {

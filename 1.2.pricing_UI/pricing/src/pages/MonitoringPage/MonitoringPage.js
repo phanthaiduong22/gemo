@@ -4,7 +4,7 @@ import { Container, Row, Col, Modal, Button } from "react-bootstrap";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar";
 import axios from "axios";
 import "./MonitoringPage.css";
-
+import callAPI from "../../utils/apiCaller";
 const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
 
@@ -67,18 +67,17 @@ class MonitoringPage extends React.Component {
   };
 
   fetchBaristas = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const response = await axios.get(
-        `${backendUrl}/users/${user._id}/baristas`
-      );
-
-      if (response.data) {
+    callAPI("/users/baristas", "GET")
+      .then((response) => {
         const baristas = response.data;
+        console.log(response.data);
 
         this.setState({ baristas });
-      }
-    } catch (error) {}
+      })
+      .catch((error) => {
+        // Handle any errors
+        console.log(error);
+      });
   };
 
   handlePerformanceClick = (performance) => {

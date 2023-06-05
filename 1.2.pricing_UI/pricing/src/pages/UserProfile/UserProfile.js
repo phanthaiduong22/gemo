@@ -3,6 +3,7 @@ import { showAlert } from "../../redux/actions/alertActions";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar";
 import { connect } from "react-redux";
 import axios from "axios";
+import callAPI from "../../utils/apiCaller";
 
 const backendUrl =
   process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
@@ -32,10 +33,9 @@ class UserProfilePage extends React.Component {
 
   fetchUserData = async () => {
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const response = await axios.get(`${backendUrl}/users/${user._id}`);
+      const response = await callAPI("/users", "GET");
 
-      if (response.data) {
+      if (response) {
         const {
           _id,
           username,
@@ -61,8 +61,9 @@ class UserProfilePage extends React.Component {
         });
       }
     } catch (error) {
+      // Handle the error
       // this.props.showAlert("error", "Failed to fetch user information");
-      // console.log(error);
+      console.log(error);
     }
   };
 
@@ -93,13 +94,9 @@ class UserProfilePage extends React.Component {
       };
 
       try {
-        const response = await axios.put(
-          `${backendUrl}/users/${user._id}/update`,
-          updatedUser
-        );
+        const response = await callAPI("/users", "PUT", updatedUser);
 
         if (response.data && response.data.message) {
-          localStorage.setItem("user", JSON.stringify(updatedUser));
           this.setState({ isEditing: false, isEmailEditable: false });
           this.props.showAlert(
             "success",
@@ -168,12 +165,6 @@ class UserProfilePage extends React.Component {
               <div className="card mb-4">
                 <div className="card-body text-center">
                   {!picture || picture === "" ? (
-                    // <img
-                    //   src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
-                    //   alt="avatar"
-                    //   className="rounded-circle img-fluid"
-                    //   style={{ width: "150px" }}
-                    // />
                     <></>
                   ) : (
                     <img

@@ -13,7 +13,6 @@ const Login = () => {
   const [showError, setShowError] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
-  const [token, setToken] = useState("");
 
   const [googleUser, setGoogleUser] = useState(null);
 
@@ -87,7 +86,13 @@ const Login = () => {
     }
 
     axios
-      .post(`${backendUrl}/login`, { username, password })
+      .post(
+        `${backendUrl}/login`,
+        { username, password },
+        {
+          withCredentials: true,
+        }
+      )
       .then((response) => {
         const data = response.data;
         if (data.user) {
@@ -95,7 +100,6 @@ const Login = () => {
             ...data.user,
           };
           localStorage.setItem("user", JSON.stringify(user));
-          localStorage.setItem("token", data.token);
           setUser(user);
           window.location.href = "/"; // Redirect to home page
         } else {
@@ -118,13 +122,6 @@ const Login = () => {
         setErrorText(errorMessage);
       });
   };
-
-  // const handleLogout = () => {
-  //   googleLogout(); // Call the googleLogout function
-  //   setGoogleUser(null);
-  //   setUser(null);
-  //   localStorage.removeItem("user");
-  // };
 
   return (
     <div className="container">

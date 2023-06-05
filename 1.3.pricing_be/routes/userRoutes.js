@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
-const { verifyToken } = require("../middleware/authMiddleware");
+const { verifyToken, authorize } = require("../middleware/authMiddleware");
 
 const baristaImage =
   "https://img.freepik.com/premium-vector/young-smiling-man-barista-wearing-apron-standing-whipped-milk-into-coffee-mug-coffee-shop-coffee-time-take-away-concept-3d-vector-people-character-illustrationcartoon-minimal-style_365941-811.jpg";
@@ -33,6 +33,7 @@ router.post("/login", async (req, res, next) => {
 
     const userToken = {
       _id: user._id,
+      role: user.role,
       username: user.username,
     };
 
@@ -134,14 +135,8 @@ router.post("/register", async (req, res, next) => {
 // Get User Info
 router.get("/users", verifyToken, async (req, res, next) => {
   try {
-    const user = await User.findById(req.userId);
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
     const { _id, username, role, fullName, email, phone, address, picture } =
-      user;
+      req.user;
     res.json({
       _id,
       username,
@@ -159,17 +154,11 @@ router.get("/users", verifyToken, async (req, res, next) => {
 
 // Update User
 router.put("/users", verifyToken, async (req, res, next) => {
-  const userId = req.userId;
   const { username, password, role, fullName, email, phone, address } =
     req.body;
+  const user = req.user;
 
   try {
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
     if (username) {
       user.username = username;
     }
@@ -201,23 +190,21 @@ router.put("/users", verifyToken, async (req, res, next) => {
   }
 });
 
-/// Barista
+/// Get all baristas Id and Username
+router.get(
+  "/users/baristas",
+  verifyToken,
+  authorize(["staff"]),
+  async (req, res) => {
+    try {
+      // Find all users with the "barista" role and retrieve their IDs and names
+      const baristas = await User.find({ role: "barista" }, "_id username");
 
-router.get("/users/:userId/baristas", async (req, res) => {
-  try {
-    // Check if the requesting user has the "staff" role
-    const requestingUser = await User.findById(req.params.userId);
-    if (requestingUser.role !== "staff") {
-      return res.status(403).json({ message: "Access denied" });
+      res.json(baristas);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
     }
-
-    // Find all users with the "barista" role and retrieve their IDs and names
-    const baristas = await User.find({ role: "barista" }, "_id username");
-
-    res.json(baristas);
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
   }
-});
+);
 
 module.exports = router;

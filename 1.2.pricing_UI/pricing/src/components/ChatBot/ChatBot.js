@@ -29,10 +29,16 @@ const ChatBot = ({ user }) => {
   const botResponse = async (prompt) => {
     try {
       setIsLoading(true);
-      const response = await axios.post(`${backendUrl}/chat`, {
-        prompt: prompt,
-        assignedUserId: JSON.parse(localStorage.getItem("user"))._id,
-      });
+      const response = await axios.post(
+        `${backendUrl}/chat`,
+        {
+          prompt: prompt,
+          assignedUserId: JSON.parse(localStorage.getItem("user"))._id,
+        },
+        {
+          withCredentials: true,
+        }
+      );
       const botMessage = {
         user: "Bot",
         text: response.data.response,
