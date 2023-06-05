@@ -1,5 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
 const User = require("../models/user");
 
 const baristaImage =
@@ -28,6 +30,15 @@ router.post("/login", async (req, res, next) => {
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
+    const userToken = {
+      _id: user._id,
+      username: user.username,
+    };
+
+    const token = jwt.sign(userToken, process.env.SECRET_KEY, {
+      expiresIn: "1h",
+    });
+
     const userResponse = {
       _id: user._id,
       username: user.username,
@@ -39,7 +50,7 @@ router.post("/login", async (req, res, next) => {
       picture: user.picture,
     };
 
-    res.json({ user: userResponse });
+    res.json({ user: userResponse, token });
   } catch (error) {
     next(error);
   }

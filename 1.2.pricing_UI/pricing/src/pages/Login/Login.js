@@ -13,6 +13,7 @@ const Login = () => {
   const [showError, setShowError] = useState(false);
   const [errorText, setErrorText] = useState("");
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+  const [token, setToken] = useState("");
 
   const [googleUser, setGoogleUser] = useState(null);
 
@@ -94,6 +95,7 @@ const Login = () => {
             ...data.user,
           };
           localStorage.setItem("user", JSON.stringify(user));
+          localStorage.setItem("token", data.token);
           setUser(user);
           window.location.href = "/"; // Redirect to home page
         } else {

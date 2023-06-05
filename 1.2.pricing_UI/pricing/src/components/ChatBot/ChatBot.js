@@ -40,7 +40,11 @@ const ChatBot = ({ user }) => {
       setMessages((messages) => [...messages, botMessage]);
       setUserInput("");
     } catch (error) {
-      console.error(error);
+      const botMessage = {
+        user: "Bot",
+        text: error.message,
+      };
+      setMessages((messages) => [...messages, botMessage]);
     } finally {
       setIsLoading(false);
     }
