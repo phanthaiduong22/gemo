@@ -11,6 +11,7 @@ import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 import { Rating } from "react-simple-star-rating";
 import WebSocketComment from "./WebSocketComment/WebSocketComment";
 import callAPI from "../../utils/apiCaller";
+import FeedbackModal from "../../components/FeedbackModal/FeedbackModal";
 
 class Order extends Component {
   constructor(props) {
@@ -29,7 +30,7 @@ class Order extends Component {
   }
 
   componentDidMount = () => {
-    setInterval(this.updateAllowFetchingNewOrders(), 3000);
+    // setInterval(this.updateAllowFetchingNewOrders(), 3000);
   };
 
   renderItemImage(item) {
@@ -369,12 +370,16 @@ class Order extends Component {
                   <div></div>
                 )}
 
-                <button
-                  className="btn btn-primary"
-                  onClick={this.toggleCommentSection}
-                >
-                  {showCommentSection ? "Hide Comments" : "Add Comment"}
-                </button>
+                <div>
+                  <FeedbackModal orderId={order._id} />
+
+                  <button
+                    className="btn btn-primary"
+                    onClick={this.toggleCommentSection}
+                  >
+                    {showCommentSection ? "Hide Comments" : "Add Comment"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
