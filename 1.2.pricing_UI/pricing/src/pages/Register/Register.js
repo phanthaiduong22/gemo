@@ -1,10 +1,7 @@
 import React from "react";
 import { Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import axios from "axios";
-
-let backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
+import callAPI from "../../utils/apiCaller";
 
 class Register extends React.Component {
   constructor(props) {
@@ -29,7 +26,6 @@ class Register extends React.Component {
   handleRoleChange = (e) => {
     this.setState({ role: e.target.value });
   };
-
   handleFormSubmit = async (e) => {
     e.preventDefault();
 
@@ -45,9 +41,9 @@ class Register extends React.Component {
       });
       return;
     }
+
     try {
-      // Make the registration request
-      const response = await axios.post(`${backendUrl}/register`, {
+      await callAPI("/register", "POST", {
         username,
         password,
         role,
@@ -63,10 +59,9 @@ class Register extends React.Component {
         showSuccess: true,
         successText: "Registration successful!",
       });
-
-      console.log("Registration successful", response.status);
     } catch (error) {
       console.error("Error during registration:", error);
+
       let errorMessage = "Registration failed";
 
       if (error.response && error.response.data && error.response.data.error) {

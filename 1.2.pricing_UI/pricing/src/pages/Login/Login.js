@@ -3,9 +3,7 @@ import { Alert } from "react-bootstrap";
 import { Navigate, Link } from "react-router-dom";
 import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
-
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
+import callAPI from "../../utils/apiCaller";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -42,14 +40,13 @@ const Login = () => {
             googleId: id,
           };
 
-          axios
-            .post(`${backendUrl}/register`, newUser)
+          callAPI("/register", "POST", newUser)
             .then((response) => {
               const user = {
                 ...newUser,
                 _id: response.data.userId, // Store _id in the user object
               };
-              localStorage.setItem("user", JSON.stringify(user));
+              // localStorage.setItem("user", JSON.stringify(user));
               setUser(user);
             })
             .catch((error) => {
@@ -63,7 +60,6 @@ const Login = () => {
   }, [googleUser]);
 
   useEffect(() => {
-    // Update user state when localStorage changes
     setUser(JSON.parse(localStorage.getItem("user")));
   }, []);
 
@@ -84,15 +80,7 @@ const Login = () => {
       setErrorText("Please enter both username and password");
       return;
     }
-
-    axios
-      .post(
-        `${backendUrl}/login`,
-        { username, password },
-        {
-          withCredentials: true,
-        }
-      )
+    callAPI("/login", "POST", { username, password })
       .then((response) => {
         const data = response.data;
         if (data.user) {

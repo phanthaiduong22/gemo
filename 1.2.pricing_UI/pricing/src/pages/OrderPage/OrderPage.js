@@ -6,7 +6,6 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 
 import "./OrderPage.css";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar";
-import { Navigate } from "react-router-dom";
 import callAPI from "../../utils/apiCaller";
 
 class OrderPage extends Component {
@@ -95,7 +94,7 @@ class OrderPage extends Component {
     this.setState(
       {
         displayOrders,
-        displayOrdersKey: displayOrdersKey + 1, // Update the displayOrdersKey
+        displayOrdersKey: displayOrdersKey + 1,
       },
       () => {}
     );

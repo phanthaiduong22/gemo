@@ -184,7 +184,7 @@ router.put("/users", verifyToken, async (req, res, next) => {
 router.get(
   "/users/baristas",
   verifyToken,
-  authorize(["staff"]),
+  authorize(["staff", "barista"]),
   async (req, res) => {
     try {
       // Find all users with the "barista" role and retrieve their IDs and names

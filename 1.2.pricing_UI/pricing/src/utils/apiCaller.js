@@ -9,7 +9,6 @@ const instance = axios.create({
 });
 
 export default function callAPI(endpoint, method = "POST", data) {
-  console.log(endpoint, method, data);
   return instance({
     method: method,
     url: endpoint,

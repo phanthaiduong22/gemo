@@ -6,10 +6,7 @@ import milkteaImage from "../../images/milktea.png";
 import bagelImage from "../../images/bagel.png";
 import sandwichImage from "../../images/sandwich.png";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar.js";
-import { Navigate } from "react-router-dom";
-
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
+import callAPI from "../../utils/apiCaller";
 
 class MenuPage extends React.Component {
   constructor(props) {
@@ -40,34 +37,32 @@ class MenuPage extends React.Component {
           price: 3,
         },
       ],
-      user: null,
       locale: "en",
     };
   }
 
   componentDidMount() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    this.setState({ user });
     this.fetchItemRatings();
   }
 
   fetchItemRatings = async () => {
-    try {
-      const response = await fetch(`${backendUrl}/itemRating`); // Update the API endpoint
-      const ratings = await response.json();
-      const { menuItems } = this.state;
-      for (const rating of ratings) {
-        for (let i = 0; i < menuItems.length; i++) {
-          const item = menuItems[i];
-          if (rating.product === item.name) {
-            menuItems[i] = { ...item, rating: rating.rating };
+    callAPI("rating/item", "GET", null)
+      .then((res) => {
+        const ratings = res.data;
+        const { menuItems } = this.state;
+        for (const rating of ratings) {
+          for (let i = 0; i < menuItems.length; i++) {
+            const item = menuItems[i];
+            if (rating.product === item.name) {
+              menuItems[i] = { ...item, rating: rating.rating };
+            }
           }
         }
-      }
-      this.setState({ menuItems }, () => {});
-    } catch (error) {
-      console.error(error);
-    }
+        this.setState({ menuItems }, () => {});
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   handleTabChange = (tab) => {
@@ -90,7 +85,6 @@ class MenuPage extends React.Component {
 
   render() {
     const { currentTab, menuItems } = this.state;
-    const user = JSON.parse(localStorage.getItem("user"));
 
     const filteredItems =
       currentTab === "all"
@@ -99,7 +93,6 @@ class MenuPage extends React.Component {
 
     return (
       <>
-        {user === null ? <Navigate to="/login" /> : null}
         <CustomNavbar />
         <div>
           <div className="container-xl mx-auto px-6 py-8">
