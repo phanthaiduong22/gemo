@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import axios from "axios";
 import Order from "../../components/Order/Order";
 
 import { Box, Tab } from "@mui/material";
@@ -8,9 +7,7 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 import "./OrderPage.css";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar";
 import { Navigate } from "react-router-dom";
-
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
+import callAPI from "../../utils/apiCaller";
 
 class OrderPage extends Component {
   constructor(props) {
@@ -23,16 +20,7 @@ class OrderPage extends Component {
       currentPage: 1,
       ordersPerPage: 3,
       pageNumbers: 1,
-      user: {
-        _id: "",
-        username: "",
-        role: "",
-        fullName: "",
-        email: "",
-        phone: "",
-        address: "",
-        picture: "",
-      },
+      user: null,
       tab: "Pending",
       displayOrdersKey: 1,
       allowFetchingNewOrders: true,
@@ -55,44 +43,20 @@ class OrderPage extends Component {
   };
 
   fetchUserData = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const response = await axios.get(`${backendUrl}/users/${user._id}`);
-
-      if (response.data) {
-        const {
-          _id,
-          username,
-          role,
-          fullName,
-          email,
-          phone,
-          address,
-          picture,
-        } = response.data;
-
+    callAPI("users", "GET", null)
+      .then((res) => {
         this.setState(
           {
-            user: {
-              _id,
-              username,
-              role,
-              fullName,
-              email,
-              phone,
-              address,
-              picture,
-            },
+            user: res.data.user,
           },
           () => {
             this.getOrdersByUserId();
           }
         );
-      }
-    } catch (error) {
-      // this.props.showAlert("error", "Failed to fetch user information");
-      // console.log(error);
-    }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   handleTabListChange = (event, newValue) => {
@@ -138,19 +102,17 @@ class OrderPage extends Component {
   };
 
   getOrdersByUserId = async () => {
-    const { user } = this.state;
-    try {
-      const response = await axios.get(
-        `${backendUrl}/users/${user._id}/orders`
-      );
-      const orders = response.data;
-      orders.reverse();
-      this.setState({ orders }, () => {
-        this.filteredOrdersUpdate();
+    callAPI(`/orders`, "GET", null)
+      .then((res) => {
+        const orders = res.data;
+        orders.reverse();
+        this.setState({ orders }, () => {
+          this.filteredOrdersUpdate();
+        });
+      })
+      .catch((err) => {
+        console.log(err);
       });
-    } catch (error) {
-      console.error("Error retrieving orders:", error);
-    }
   };
 
   renderPagination = () => {
@@ -189,7 +151,6 @@ class OrderPage extends Component {
     const { tab, displayOrders, displayOrdersKey, user } = this.state;
     return (
       <div>
-        {user === null ? <Navigate to="/login" /> : null}
         <CustomNavbar className="mb-2" />
         <div className="container border rounded mt-2">
           <h2 className="text-2xl align-items-center font-bold mb-4 mt-4">

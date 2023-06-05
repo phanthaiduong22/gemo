@@ -2,26 +2,13 @@ import React from "react";
 import { showAlert } from "../../redux/actions/alertActions";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar";
 import { connect } from "react-redux";
-import axios from "axios";
 import callAPI from "../../utils/apiCaller";
-
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
 
 class UserProfilePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {
-        _id: "",
-        username: "",
-        role: "",
-        fullName: "",
-        email: "",
-        phone: "",
-        address: "",
-        picture: "",
-      },
+      user: null,
       isEditing: false,
       isEmailEditable: false,
     };
@@ -36,33 +23,11 @@ class UserProfilePage extends React.Component {
       const response = await callAPI("/users", "GET");
 
       if (response) {
-        const {
-          _id,
-          username,
-          role,
-          fullName,
-          email,
-          phone,
-          address,
-          picture,
-        } = response.data;
-
         this.setState({
-          user: {
-            _id,
-            username,
-            role,
-            fullName,
-            email,
-            phone,
-            address,
-            picture,
-          },
+          user: response.data.user,
         });
       }
     } catch (error) {
-      // Handle the error
-      // this.props.showAlert("error", "Failed to fetch user information");
       console.log(error);
     }
   };
@@ -150,7 +115,7 @@ class UserProfilePage extends React.Component {
 
   render() {
     const { username, role, fullName, email, phone, address, picture } =
-      this.state.user;
+      this.state.user || "";
     const { isEditing, isEmailEditable } = this.state;
 
     return (

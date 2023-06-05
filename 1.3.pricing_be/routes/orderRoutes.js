@@ -2,23 +2,19 @@
 const express = require("express");
 const Order = require("../models/order");
 const User = require("../models/user");
+const { verifyToken } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 // Create a new order
-router.post("/users/:userId/orders", async (req, res, next) => {
+router.post("/orders", verifyToken, async (req, res, next) => {
   try {
-    const { userId } = req.params;
+    const user = req.user;
+
     const { items, status, cartPrice } = req.body;
 
-    // Check if the user exists
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
     const newOrder = new Order({
-      user: userId,
+      user: user._id,
       username: user.username,
       items: items,
       status: status,
@@ -33,24 +29,22 @@ router.post("/users/:userId/orders", async (req, res, next) => {
 });
 
 // Get orders by user ID
-router.get("/users/:userId/orders", async (req, res, next) => {
-  const { userId } = req.params;
-  const user = await User.findById(userId);
-  const userRole = user ? user.role : null;
-
+router.get("/orders", verifyToken, async (req, res, next) => {
   try {
+    const user = req.user;
+    const userRole = user ? user.role : null;
     let orders;
 
     if (userRole === "staff") {
       orders = await Order.find();
     } else if (userRole === "customer") {
-      orders = await Order.find({ user: userId });
+      orders = await Order.find({ user: user._id });
     } else if (userRole === "barista") {
       orders = await Order.find({
         $or: [
           { status: "Pending" },
-          { assignedUser: userId },
-          { user: userId },
+          { assignedUser: user._id },
+          { user: user._id },
         ],
       });
     } else {

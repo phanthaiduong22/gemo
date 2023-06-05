@@ -135,18 +135,8 @@ router.post("/register", async (req, res, next) => {
 // Get User Info
 router.get("/users", verifyToken, async (req, res, next) => {
   try {
-    const { _id, username, role, fullName, email, phone, address, picture } =
-      req.user;
-    res.json({
-      _id,
-      username,
-      role,
-      fullName,
-      email,
-      phone,
-      address,
-      picture,
-    });
+    req.user;
+    res.json({ user: req.user });
   } catch (error) {
     next(error);
   }
