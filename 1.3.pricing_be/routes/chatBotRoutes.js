@@ -141,16 +141,10 @@ const evaluateFeedback = async (feedback) => {
     const messages = [
       {
         role: "system",
-        content: `You are manager of a cafeteria.\
-          You will be provided with customer feedback. \
-          The customer feedback will be delimited with ${delimiter} characters. \
-
-          You will evaluate the feedback and provide a response. \
-          Provide your output must in json format with the \
-          keys: sentimentScore and evaluation.
-          
-          sentimentScore: is in range [-1, 1], -1 is most negative and 1 is most positive
-          evaluation: is your evaluation in 20 words.
+        content: `You are manager of a cafeteria. You will be provided with customer feedback. The customer feedback will be delimited with ${delimiter} characters.
+          You will evaluate the feedback and provide a response. Provide your output must in json format with the keys: sentimentScore, evaluation,.
+          sentimentScore: is in range [-1, 1], -1 is most negative and 1 is most positive evaluation: is your evaluation in 20 words.
+          Your output must be in json format with 2 keys (sentimentScore, evaluation).
           `,
       },
       {
