@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
+const { verifyToken } = require("../middleware/authMiddleware");
 
 const baristaImage =
   "https://img.freepik.com/premium-vector/young-smiling-man-barista-wearing-apron-standing-whipped-milk-into-coffee-mug-coffee-shop-coffee-time-take-away-concept-3d-vector-people-character-illustrationcartoon-minimal-style_365941-811.jpg";
@@ -45,6 +46,7 @@ router.post("/login", async (req, res, next) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     });
 
+    // TODO: May remove in future
     const userResponse = {
       _id: user._id,
       username: user.username,
@@ -78,27 +80,22 @@ router.post("/logout", (req, res) => {
 
 // Register
 router.post("/register", async (req, res, next) => {
-  let {
-    username,
-    password,
-    role,
-    fullName,
-    email,
-    phone,
-    address,
-    googleId,
-    picture,
-  } = req.body;
-
   try {
-    let existingUser,
-      hashedPassword = "";
+    const {
+      username,
+      password,
+      role,
+      fullName,
+      email,
+      phone,
+      address,
+      googleId,
+      picture,
+    } = req.body;
 
-    if (googleId) {
-      existingUser = await User.findOne({ googleId });
-    } else {
-      existingUser = await User.findOne({ username });
-    }
+    const existingUser = googleId
+      ? await User.findOne({ googleId })
+      : await User.findOne({ username });
 
     if (existingUser) {
       return res.json({
@@ -107,17 +104,12 @@ router.post("/register", async (req, res, next) => {
       });
     }
 
-    if (!googleId) {
-      hashedPassword = await bcrypt.hash(password, 10);
-    }
-
-    if (role == "barista" && (picture == "" || picture == undefined)) {
-      picture = baristaImage;
-    } else if (role == "staff" && (picture == "" || picture == undefined)) {
-      picture = staffImage;
-    } else if (role == "customer" && (picture == "" || picture == undefined)) {
-      picture = customerImage;
-    }
+    const hashedPassword = googleId ? "" : await bcrypt.hash(password, 10);
+    const defaultPicture = {
+      barista: baristaImage,
+      staff: staffImage,
+      customer: customerImage,
+    }[role];
 
     const newUser = new User({
       username,
@@ -128,7 +120,7 @@ router.post("/register", async (req, res, next) => {
       phone,
       address,
       googleId,
-      picture,
+      picture: picture || defaultPicture,
     });
 
     const savedUser = await newUser.save();
@@ -140,19 +132,18 @@ router.post("/register", async (req, res, next) => {
 });
 
 // Get User Info
-router.get("/users/:userId", async (req, res, next) => {
-  const { userId } = req.params;
-
+router.get("/users", verifyToken, async (req, res, next) => {
   try {
-    const user = await User.findById(userId);
+    const user = await User.findById(req.userId);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const { username, role, fullName, email, phone, address, picture } = user;
+    const { _id, username, role, fullName, email, phone, address, picture } =
+      user;
     res.json({
-      _id: user._id,
+      _id,
       username,
       role,
       fullName,
@@ -167,8 +158,8 @@ router.get("/users/:userId", async (req, res, next) => {
 });
 
 // Update User
-router.put("/users/:userId/update", async (req, res, next) => {
-  const { userId } = req.params;
+router.put("/users", verifyToken, async (req, res, next) => {
+  const userId = req.userId;
   const { username, password, role, fullName, email, phone, address } =
     req.body;
 
