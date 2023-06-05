@@ -2,22 +2,18 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Modal } from "react-bootstrap";
 import { FormattedMessage, injectIntl } from "react-intl";
-import axios from "axios";
 import "./Cart.css";
 import { HiOutlineTrash } from "react-icons/hi";
 import emptyCartImage from "../../images/empty_cart.png";
 import { removeFromCart, clearCart } from "../../redux/actions/cartActions";
 import { showAlert } from "../../redux/actions/alertActions";
-
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
+import callAPI from "../../utils/apiCaller";
 
 class Cart extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isModalOpen: props.isModalOpen,
-      user: JSON.parse(localStorage.getItem("user")),
     };
   }
 
@@ -34,7 +30,6 @@ class Cart extends Component {
   };
 
   handleAddToOrder = async () => {
-    const { user } = this.state;
     const { cart } = this.props;
     const order = cart;
     const updatedOrder = {
@@ -43,18 +38,14 @@ class Cart extends Component {
       items: order.items.map(({ id, ...item }) => item),
     };
 
-    try {
-      await axios.post(`${backendUrl}/users/${user._id}/orders`, updatedOrder);
-      // const createdOrder = response.data;
-      // clear cart
-      this.handleClearCart();
-
-      // show alert
-      this.props.showAlert("success", "Order created successfully");
-    } catch (error) {
-      // show error alert
-      this.props.showAlert("danger", `Error creating order: ${error.message}`);
-    }
+    callAPI("orders", "POST", updatedOrder)
+      .then((res) => {
+        this.handleClearCart();
+        this.props.showAlert("success", "Order created successfully");
+      })
+      .catch((err) => {
+        this.props.showAlert("danger", `Error creating order: ${err.message}`);
+      });
   };
 
   formatDrinkTopping(item) {

@@ -4,16 +4,13 @@ import coffeeImage from "../../images/coffee.png";
 import milkteaImage from "../../images/milktea.png";
 import bagelImage from "../../images/bagel.png";
 import sandwichImage from "../../images/sandwich.png";
-import axios from "axios";
 import "./Order.css";
 import { showAlert } from "../../redux/actions/alertActions";
 import { connect } from "react-redux";
 import ConfirmModal from "../../components/ConfirmModal/ConfirmModal";
 import { Rating } from "react-simple-star-rating";
 import WebSocketComment from "./WebSocketComment/WebSocketComment";
-
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
+import callAPI from "../../utils/apiCaller";
 
 class Order extends Component {
   constructor(props) {
@@ -84,39 +81,33 @@ class Order extends Component {
   };
 
   callUpdateOrderStatus = async (orderId, status) => {
-    const userId = this.state.user._id;
-    try {
-      await axios.put(
-        `${backendUrl}/users/${userId}/orders/${orderId}/status`,
-        {
-          status,
-        }
-      );
-      this.props.showAlert("success", "Order status updated successfully");
-      this.props.getOrdersByUserId();
-    } catch (error) {
-      this.props.showAlert(
-        "danger",
-        `Error updating order status: ${error.message}`
-      );
-    }
+    callAPI(`/orders/${orderId}/status`, "PUT", {
+      status,
+    })
+      .then((res) => {
+        this.props.showAlert("success", "Order status updated successfully");
+        this.props.getOrdersByUserId();
+      })
+      .catch((err) => {
+        this.props.showAlert(
+          "danger",
+          `Error updating order status: ${err.response.data.message}`
+        );
+      });
   };
 
   callRecreateOrder = async (orderId) => {
-    const userId = this.state.user._id;
-    try {
-      await axios.post(
-        `${backendUrl}/users/${userId}/orders/${orderId}/recreate`
-      );
-      this.props.showAlert("success", "Order recreated successfully");
-      this.props.getOrdersByUserId();
-    } catch (error) {
-      console.log(error);
-      this.props.showAlert(
-        "danger",
-        `Error recreating order: ${error.response.data.message}`
-      );
-    }
+    callAPI(`/orders/${orderId}/recreate`, "POST")
+      .then((res) => {
+        this.props.showAlert("success", "Order recreated successfully");
+        this.props.getOrdersByUserId();
+      })
+      .catch((err) => {
+        this.props.showAlert(
+          "danger",
+          `Error recreating order: ${err.response.data.message}`
+        );
+      });
   };
 
   handleConfirmation = (confirmed) => {
@@ -147,28 +138,28 @@ class Order extends Component {
   };
 
   handleRating = async (rate) => {
-    const { order, user } = this.state;
+    const { order } = this.state;
     const { _id: orderId } = order;
-    const userId = user._id;
 
-    try {
-      await axios.put(`${backendUrl}/users/${userId}/orders/${orderId}/rate`, {
-        rating: rate,
+    callAPI(`/orders/${orderId}/rate`, "PUT", {
+      rating: rate,
+    })
+      .then((res) => {
+        this.setState({
+          order: {
+            ...order,
+            rating: rate,
+          },
+        });
+        this.props.showAlert("success", "Order rating updated successfully");
+      })
+      .catch((err) => {
+        this.setState({ order: order });
+        this.props.showAlert(
+          "danger",
+          `Error updating order rating: ${err.message}`
+        );
       });
-      this.setState({
-        order: {
-          ...order,
-          rating: rate,
-        },
-      });
-      this.props.showAlert("success", "Order rating updated successfully");
-    } catch (error) {
-      this.setState({ order: order });
-      this.props.showAlert(
-        "danger",
-        `Error updating order rating: ${error.response.data.message}`
-      );
-    }
   };
 
   toggleCommentSection = () => {

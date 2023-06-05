@@ -2,25 +2,13 @@ import React from "react";
 import { showAlert } from "../../redux/actions/alertActions";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar";
 import { connect } from "react-redux";
-import axios from "axios";
-
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
+import callAPI from "../../utils/apiCaller";
 
 class UserProfilePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {
-        _id: "",
-        username: "",
-        role: "",
-        fullName: "",
-        email: "",
-        phone: "",
-        address: "",
-        picture: "",
-      },
+      user: null,
       isEditing: false,
       isEmailEditable: false,
     };
@@ -32,37 +20,15 @@ class UserProfilePage extends React.Component {
 
   fetchUserData = async () => {
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const response = await axios.get(`${backendUrl}/users/${user._id}`);
+      const response = await callAPI("/users", "GET");
 
-      if (response.data) {
-        const {
-          _id,
-          username,
-          role,
-          fullName,
-          email,
-          phone,
-          address,
-          picture,
-        } = response.data;
-
+      if (response) {
         this.setState({
-          user: {
-            _id,
-            username,
-            role,
-            fullName,
-            email,
-            phone,
-            address,
-            picture,
-          },
+          user: response.data.user,
         });
       }
     } catch (error) {
-      // this.props.showAlert("error", "Failed to fetch user information");
-      // console.log(error);
+      console.log(error);
     }
   };
 
@@ -93,13 +59,9 @@ class UserProfilePage extends React.Component {
       };
 
       try {
-        const response = await axios.put(
-          `${backendUrl}/users/${user._id}/update`,
-          updatedUser
-        );
+        const response = await callAPI("/users", "PUT", updatedUser);
 
         if (response.data && response.data.message) {
-          localStorage.setItem("user", JSON.stringify(updatedUser));
           this.setState({ isEditing: false, isEmailEditable: false });
           this.props.showAlert(
             "success",
@@ -153,7 +115,7 @@ class UserProfilePage extends React.Component {
 
   render() {
     const { username, role, fullName, email, phone, address, picture } =
-      this.state.user;
+      this.state.user || "";
     const { isEditing, isEmailEditable } = this.state;
 
     return (
@@ -168,12 +130,6 @@ class UserProfilePage extends React.Component {
               <div className="card mb-4">
                 <div className="card-body text-center">
                   {!picture || picture === "" ? (
-                    // <img
-                    //   src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp"
-                    //   alt="avatar"
-                    //   className="rounded-circle img-fluid"
-                    //   style={{ width: "150px" }}
-                    // />
                     <></>
                   ) : (
                     <img

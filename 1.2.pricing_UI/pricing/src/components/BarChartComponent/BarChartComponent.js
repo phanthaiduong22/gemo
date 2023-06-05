@@ -1,28 +1,23 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Chart, registerables } from "chart.js";
-import axios from "axios";
+import callAPI from "../../utils/apiCaller";
 
 Chart.register(...registerables);
 
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
-
 const BarChartComponent = ({ userId }) => {
-  // console.log("userId", userId);
   const chartRef = useRef(null);
   const [fetchedRatings, setFetchedRatings] = useState([]);
   const [averageRatings, setAverageRatings] = useState([]);
 
   useEffect(() => {
     const fetchRatings = async () => {
-      try {
-        const response = await axios.get(
-          `${backendUrl}/users/${userId}/rating`
-        );
-        setFetchedRatings(response.data);
-      } catch (error) {
-        console.error("Error fetching ratings:", error);
-      }
+      callAPI("/rating/users", "GET", null)
+        .then((response) => {
+          setFetchedRatings(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching ratings:", error);
+        });
     };
 
     fetchRatings();
@@ -30,19 +25,20 @@ const BarChartComponent = ({ userId }) => {
 
   useEffect(() => {
     const fetchAverageRatings = async () => {
-      try {
-        const response = await axios.get(`${backendUrl}/orders/rating`);
-        setAverageRatings(response.data);
-      } catch (error) {
-        console.error("Error fetching average ratings:", error);
-      }
+      callAPI("/rating/orders", "GET")
+        .then((response) => {
+          setAverageRatings(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching average ratings:", error);
+        });
     };
 
     fetchAverageRatings();
   }, []);
 
   useEffect(() => {
-    if (fetchedRatings.length === 0 || averageRatings.length === 0) return;
+    if (fetchedRatings.length === 0 && averageRatings.length === 0) return;
 
     const productNames = fetchedRatings.map((item) => item.product);
     const productRatings = fetchedRatings.map((item) => item.rating);

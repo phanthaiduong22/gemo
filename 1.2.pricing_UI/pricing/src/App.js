@@ -12,7 +12,6 @@ import { IntlProvider } from "react-intl";
 import UserProfile from "./pages/UserProfile/UserProfile";
 import MonitoringPage from "./pages/MonitoringPage/MonitoringPage";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import ChatBotPage from "./pages/ChatBotPage/ChatBotPage";
 
 // import "@fortawesome/fontawesome-free/css/all.min.css";
 // import "bootstrap-css-only/css/bootstrap.min.css";
@@ -36,7 +35,6 @@ const App = () => {
                 <Route path="orders" element={<OrderPage />} />
                 <Route path="profile" element={<UserProfile />} />
                 <Route path="monitor" element={<MonitoringPage />} />
-                <Route path="chatbot" element={<ChatBotPage />} />
               </Routes>
             </React.StrictMode>
           </GoogleOAuthProvider>

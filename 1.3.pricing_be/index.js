@@ -5,207 +5,58 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./middleware/logger");
-const userRoutes = require("./routes/userRoutes");
-const {
-  orderRoutes,
-  getOrderCommentsAndRatingsByAssignedUserId,
-} = require("./routes/orderRoutes");
-const WebSocket = require("ws");
+
 const http = require("http");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-const Order = require("./models/order.js");
-const User = require("./models/user.js");
-
-const { Configuration, OpenAIApi } = require("openai");
-// console.log(process.env.OPENAI_API_KEY);
-const config = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(config);
 
 // Connect to MongoDB
 connectDB();
 
 // Middleware
-const origin =
-  process.env.NODE_ENV === "production"
-    ? "https://restaurant.duongphan.com"
-    : "*";
+if (process.env.NODE_ENV === "production") {
+  app.use(morgan("combined"));
+  app.use(
+    cors({
+      origin: "https://restaurant.duongphan.com", // Replace with your production frontend domain
+      credentials: true,
+    })
+  );
+} else {
+  app.use(morgan("dev"));
+  app.use(
+    cors({
+      origin: "http://localhost:3000", // Replace with your development frontend domain
+      credentials: true,
+    })
+  );
+}
+
 app.use(bodyParser.json());
-app.use(cors({ origin }));
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(logger);
-app.use(morgan("dev"));
+
+const userRoutes = require("./routes/userRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const chatBotRoutes = require("./routes/chatBotRoutes");
+const { ratingRoutes } = require("./routes/ratingRoutes");
+const setupChatWebSocket = require("./routes/chatWebSocket");
 
 // Routes
 app.use("/api", userRoutes);
 app.use("/api", orderRoutes);
+app.use("/api", chatBotRoutes);
+app.use("/api", ratingRoutes);
 
 // Store WebSocket connections and comments for each order
-const orderConnections = {};
-const orderComments = {};
-
-// Handle WebSocket connections
-wss.on("connection", (ws, req) => {
-  // Extract the orderId from query parameters
-  const params = new URLSearchParams(req.url.split("?")[1]);
-  const orderId = params.get("orderId");
-
-  ws.on("message", async (message) => {
-    try {
-      const { userId, comment } = JSON.parse(message);
-
-      if (!orderId || !userId || !comment) {
-        throw new Error("Invalid data provided");
-      }
-
-      const user = await User.findById(userId);
-      if (!user) {
-        throw new Error("User not found");
-      }
-
-      const newComment = {
-        user: userId,
-        username: user.username,
-        picture: user.picture,
-        content: comment,
-        createdAt: new Date(),
-      };
-
-      if (!orderComments[orderId]) {
-        orderComments[orderId] = [];
-      }
-      orderComments[orderId].push(newComment);
-
-      const updatedOrder = await Order.findByIdAndUpdate(
-        orderId,
-        { $push: { comments: newComment } },
-        { new: true }
-      );
-
-      if (!updatedOrder) {
-        throw new Error("Order not found");
-      }
-
-      broadcastComments(orderId, updatedOrder.comments);
-    } catch (error) {
-      console.error("Error updating order comments:", error);
-    }
-  });
-
-  ws.on("close", () => {
-    if (orderConnections[orderId]) {
-      const index = orderConnections[orderId].indexOf(ws);
-      if (index !== -1) {
-        orderConnections[orderId].splice(index, 1);
-      }
-    }
-  });
-
-  if (!orderConnections[orderId]) {
-    orderConnections[orderId] = [];
-  }
-  orderConnections[orderId].push(ws);
-
-  (async () => {
-    try {
-      const order = await Order.findById(orderId);
-      if (order) {
-        const comments = order.comments.map((comment) => ({
-          ...comment.toObject(),
-          _id: comment._id.toString(),
-        }));
-        ws.send(JSON.stringify({ orderId, comments }));
-      }
-    } catch (error) {
-      console.error("Error retrieving order comments:", error);
-    }
-  })();
-});
-
-function broadcastComments(orderId, comments) {
-  if (orderConnections[orderId]) {
-    const message = JSON.stringify({ orderId, comments });
-    orderConnections[orderId].forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
-    });
-  }
-}
-
-app.post("/api/chat", async (req, res) => {
-  try {
-    const { assignedUserId, prompt } = req.body;
-
-    let messages = [];
-    const performance = await getOrderCommentsAndRatingsByAssignedUserId(
-      assignedUserId
-    );
-
-    const promptDictionary = {
-      "/performance": {
-        message: `I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. Data: ${JSON.stringify(
-          performance
-        )}`,
-      },
-      "/rating": {
-        message: `Focusing on my rating, DON't mentioning about comments/attitude. My cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. Data: ${JSON.stringify(
-          performance
-        )}`,
-      },
-      "/comment": {
-        message: `Focusing on my comment/attitude, DON't mentioning about rating. My cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. Data: ${JSON.stringify(
-          performance
-        )}`,
-      },
-    };
-
-    messages.push({
-      role: "system",
-      content:
-        "You are manager of a cafeteria. Give barista evaluation based on their performance",
-    });
-
-    if (prompt in promptDictionary) {
-      const { message } = promptDictionary[prompt];
-      messages.push({
-        role: "user",
-        content: message,
-      });
-    } else {
-      messages.push({
-        role: "user",
-        content: prompt,
-      });
-    }
-
-    const completion = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages,
-    });
-
-    const response = completion.data.choices[0].message.content;
-    res.json({ response });
-  } catch (error) {
-    console.error(error);
-    if (error.response) {
-      console.log(error.response.data);
-      res.status(error.response.status).json({ error: error.response.data });
-    } else {
-      console.log(error.message);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  }
-});
+setupChatWebSocket(server);
 
 // Error handling middleware
 app.use(errorHandler);

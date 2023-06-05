@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import "./ChatBot.css";
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
+import callAPI from "../../utils/apiCaller";
 
 const ChatBot = ({ user }) => {
   const [messages, setMessages] = useState([]);
@@ -29,18 +27,26 @@ const ChatBot = ({ user }) => {
   const botResponse = async (prompt) => {
     try {
       setIsLoading(true);
-      const response = await axios.post(`${backendUrl}/chat`, {
+      callAPI("/chat", "POST", {
         prompt: prompt,
-        assignedUserId: JSON.parse(localStorage.getItem("user"))._id,
-      });
+      })
+        .then((response) => {
+          const botMessage = {
+            user: "Bot",
+            text: response.data.response,
+          };
+          setMessages((messages) => [...messages, botMessage]);
+          setUserInput("");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (error) {
       const botMessage = {
         user: "Bot",
-        text: response.data.response,
+        text: error.message,
       };
       setMessages((messages) => [...messages, botMessage]);
-      setUserInput("");
-    } catch (error) {
-      console.error(error);
     } finally {
       setIsLoading(false);
     }

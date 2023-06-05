@@ -2,26 +2,14 @@ import React from "react";
 import BarChartComponent from "../../components/BarChartComponent/BarChartComponent";
 import { Container, Row, Col, Modal, Button } from "react-bootstrap";
 import CustomNavbar from "../../components/CustomNavbar/CustomNavbar";
-import axios from "axios";
 import "./MonitoringPage.css";
-
-const backendUrl =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:8005/api";
+import callAPI from "../../utils/apiCaller";
 
 class MonitoringPage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {
-        _id: "",
-        username: "",
-        role: "",
-        fullName: "",
-        email: "",
-        phone: "",
-        address: "",
-        picture: "",
-      },
+      user: null,
       baristas: [], // Barista data
       showModal: false,
       selectedPerformance: null,
@@ -34,51 +22,27 @@ class MonitoringPage extends React.Component {
   }
 
   fetchUserData = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const response = await axios.get(`${backendUrl}/users/${user._id}`);
-
-      if (response.data) {
-        const {
-          _id,
-          username,
-          role,
-          fullName,
-          email,
-          phone,
-          address,
-          picture,
-        } = response.data;
-
-        this.setState({
-          user: {
-            _id,
-            username,
-            role,
-            fullName,
-            email,
-            phone,
-            address,
-            picture,
-          },
-        });
-      }
-    } catch (error) {}
+    callAPI("/users", "GET")
+      .then((response) => {
+        const user = response.data.user;
+        this.setState({ user });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   fetchBaristas = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const response = await axios.get(
-        `${backendUrl}/users/${user._id}/baristas`
-      );
-
-      if (response.data) {
+    callAPI("/users/baristas", "GET")
+      .then((response) => {
         const baristas = response.data;
 
         this.setState({ baristas });
-      }
-    } catch (error) {}
+      })
+      .catch((error) => {
+        // Handle any errors
+        console.log(error);
+      });
   };
 
   handlePerformanceClick = (performance) => {
@@ -91,6 +55,7 @@ class MonitoringPage extends React.Component {
 
   render() {
     const { user, baristas, showModal, selectedPerformance } = this.state;
+    if (user == null) return null;
     const isStaff = user.role === "staff";
 
     return (
