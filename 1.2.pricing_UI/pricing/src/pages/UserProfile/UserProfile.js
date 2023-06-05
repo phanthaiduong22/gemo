@@ -71,7 +71,7 @@ class UserProfilePage extends React.Component {
           throw new Error("Failed to update user information");
         }
       } catch (error) {
-        this.props.showAlert("error", "Failed to update user information");
+        this.props.showAlert("danger", "Failed to update user information");
       }
     }
   };
@@ -92,22 +92,22 @@ class UserProfilePage extends React.Component {
 
     if (phone !== "" && !/^\d+$/.test(phone)) {
       isValid = false;
-      this.props.showAlert("error", "Invalid phone number");
+      this.props.showAlert("danger", "Invalid phone number");
     }
 
     if (email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       isValid = false;
-      this.props.showAlert("error", "Invalid email address");
+      this.props.showAlert("danger", "Invalid email address");
     }
 
     if (fullName === "" && fullName.trim() === "") {
       isValid = false;
-      this.props.showAlert("error", "Full name cannot be empty");
+      this.props.showAlert("danger", "Full name cannot be empty");
     }
 
     if (fullName === "" && address.trim() === "") {
       isValid = false;
-      this.props.showAlert("error", "Address cannot be empty");
+      this.props.showAlert("danger", "Address cannot be empty");
     }
 
     return isValid;
