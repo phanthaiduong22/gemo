@@ -137,8 +137,8 @@ class Register extends React.Component {
                       onChange={this.handleRoleChange}
                     >
                       <option value="customer">Customer</option>
-                      <option value="staff">Staff</option>
                       <option value="barista">Barista</option>
+                      <option value="staff">Staff</option>
                     </select>
                   </div>
                   <div className="mt-4">

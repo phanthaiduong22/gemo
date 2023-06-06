@@ -15,50 +15,45 @@ const openai = new OpenAIApi(config);
 
 router.post("/chat", verifyToken, async (req, res) => {
   try {
-    userId = req.user._id;
+    user = req.user;
     const { prompt } = req.body;
 
     let messages = [];
-    const performance = await getOrderCommentsAndRatingsByAssignedUserId(
-      userId
-    );
 
-    const promptDictionary = {
-      "/performance": {
-        message: `I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. Data: ${JSON.stringify(
-          performance
-        )}`,
-      },
-      "/rating": {
-        message: `Focusing on my rating, DON't mentioning about comments/attitude. My cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. Data: ${JSON.stringify(
-          performance
-        )}`,
-      },
-      "/comment": {
-        message: `Focusing on my comment/attitude, DON't mentioning about rating. My cafeteria performance: I am a barista, assignedUsername is my username, comments is the conversation between me & other customers, ratingOfAssignedUser is my score, ratingOfAllBarista. If the rating is 0, it means I haven't done this drink/food. Give me an evaluation and advise on my comments and rating compared to all baristas. Data: ${JSON.stringify(
-          performance
-        )}`,
-      },
-    };
-
-    messages.push({
-      role: "system",
-      content:
-        "You are manager of a cafeteria. Give barista evaluation based on their performance",
-    });
-
-    if (prompt in promptDictionary) {
-      const { message } = promptDictionary[prompt];
-      messages.push({
-        role: "user",
-        content: message,
-      });
-    } else {
-      messages.push({
-        role: "user",
-        content: prompt,
-      });
+    if (user.role === "customer") {
+      const orders = await Order.find().limit(5).populate("items");
+      messages.push(
+        {
+          role: "system",
+          content: `You are manager of a cafeteria. You will be provided questions for recommendation, introduce our cafeteria, anything from customer
+           I will provide you our past orders in ${delimiter}. You can reference them to answer the questions.
+            ${delimiter} ${JSON.stringify(orders)} ${delimiter}
+          `,
+        },
+        {
+          role: "user",
+          content: prompt,
+        }
+      );
+    } else if (user.role === "barista") {
+      const performance = await getOrderCommentsAndRatingsByAssignedUserId(
+        user._id
+      );
+      messages.push(
+        {
+          role: "system",
+          content: `You are manager of a cafeteria. You will be provide barista's performance. Can you evaluate the barista's performance?
+            ${delimiter} ${JSON.stringify(performance)} ${delimiter}
+          `,
+        },
+        {
+          role: "user",
+          content: prompt,
+        }
+      );
     }
+
+    console.log(messages);
 
     const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
@@ -149,7 +144,7 @@ const evaluateFeedback = async (feedback) => {
       },
       {
         role: "user",
-        content: `${delimiter} ${feedback} ${delimiter}`,
+        content: `Your output must be in json format with 2 keys (sentimentScore, evaluation). ${delimiter} ${feedback} ${delimiter}`,
       },
     ];
 
@@ -160,8 +155,6 @@ const evaluateFeedback = async (feedback) => {
     });
 
     const response = completion.data.choices[0].message.content;
-
-    // console.log(response);
 
     const { sentimentScore, evaluation } = JSON.parse(response);
     return {

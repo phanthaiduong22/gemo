@@ -371,8 +371,10 @@ class Order extends Component {
                 )}
 
                 <div>
-                  <FeedbackModal orderId={order._id} />
-
+                  {order.status === "Completed" ||
+                  order.status === "Cancelled" ? (
+                    <FeedbackModal orderId={order._id} />
+                  ) : null}
                   <button
                     className="btn btn-primary"
                     onClick={this.toggleCommentSection}

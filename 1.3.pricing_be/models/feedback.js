@@ -6,6 +6,11 @@ const feedbackSchema = new mongoose.Schema({
     ref: "Order",
     required: true,
   },
+  title: {
+    type: String,
+    required: false,
+    default: "No Title Feedback",
+  },
   feedback: {
     type: String,
     required: true,
@@ -13,6 +18,21 @@ const feedbackSchema = new mongoose.Schema({
   sentimentScore: {
     type: Number,
     required: true,
+  },
+  status: {
+    type: String,
+    enum: ["Pending", "In Progress", "Completed", "Deleted"],
+    default: "Pending",
+  },
+  priority: {
+    type: Number, // 0: good Feedback, 1: Low, 2: Medium, 3: High
+    required: true,
+    enum: [0, 1, 2, 3],
+    default: 0,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
   createdAt: {
     type: Date,
