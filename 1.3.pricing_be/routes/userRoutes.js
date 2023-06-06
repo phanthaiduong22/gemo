@@ -47,7 +47,6 @@ router.post("/login", async (req, res, next) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     });
 
-    // TODO: May remove in future
     const userResponse = {
       _id: user._id,
       username: user.username,
@@ -79,33 +78,21 @@ router.post("/logout", (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 });
 
-// Register
 router.post("/register", async (req, res, next) => {
   try {
-    const {
-      username,
-      password,
-      role,
-      fullName,
-      email,
-      phone,
-      address,
-      googleId,
-      picture,
-    } = req.body;
+    const { username, password, role, fullName, email, phone, address } =
+      req.body;
 
-    const existingUser = googleId
-      ? await User.findOne({ googleId })
-      : await User.findOne({ username });
+    const existingUser = await User.findOne({ username });
 
     if (existingUser) {
-      return res.json({
-        message: "User already exists",
+      return res.status(409).json({
+        message: "Username already exists",
         userId: existingUser._id,
       });
     }
 
-    const hashedPassword = googleId ? "" : await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     const defaultPicture = {
       barista: baristaImage,
       staff: staffImage,
@@ -120,13 +107,112 @@ router.post("/register", async (req, res, next) => {
       email,
       phone,
       address,
-      googleId,
-      picture: picture || defaultPicture,
+      picture: defaultPicture,
     });
 
     const savedUser = await newUser.save();
 
     res.json({ message: "Registration successful", userId: savedUser._id });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// TODO: Refactor this function
+router.post("/register/google", async (req, res, next) => {
+  try {
+    const {
+      username,
+      role,
+      fullName,
+      email,
+      phone,
+      address,
+      googleId,
+      picture,
+    } = req.body;
+
+    const existingUser = await User.findOne({ googleId });
+
+    if (existingUser) {
+      const userToken = {
+        _id: existingUser._id,
+        role: existingUser.role,
+        username: existingUser.username,
+      };
+
+      const token = jwt.sign(userToken, process.env.SECRET_KEY, {
+        expiresIn: "5h",
+      });
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      });
+
+      const userResponse = {
+        _id: existingUser._id,
+        username: existingUser.username,
+        role: existingUser.role,
+        fullName: existingUser.fullName,
+        email: existingUser.email,
+        phone: existingUser.phone,
+        address: existingUser.address,
+        picture: existingUser.picture,
+      };
+
+      res.json({ user: userResponse });
+      return;
+    } else {
+      const defaultPicture = {
+        barista: baristaImage,
+        staff: staffImage,
+        customer: customerImage,
+      }[role];
+
+      const newUser = new User({
+        username,
+        role,
+        fullName,
+        email,
+        phone,
+        address,
+        googleId,
+        picture: picture || defaultPicture,
+      });
+
+      const savedUser = await newUser.save();
+
+      const userToken = {
+        _id: savedUser._id,
+        role: savedUser.role,
+        username: savedUser.username,
+      };
+
+      const token = jwt.sign(userToken, process.env.SECRET_KEY, {
+        expiresIn: "5h",
+      });
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      });
+
+      const userResponse = {
+        _id: savedUser._id,
+        username: savedUser.username,
+        role: savedUser.role,
+        fullName: savedUser.fullName,
+        email: savedUser.email,
+        phone: savedUser.phone,
+        address: savedUser.address,
+        picture: savedUser.picture,
+      };
+
+      res.json({ user: userResponse });
+    }
   } catch (error) {
     next(error);
   }

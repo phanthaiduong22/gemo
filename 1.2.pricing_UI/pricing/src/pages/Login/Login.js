@@ -10,7 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showError, setShowError] = useState(false);
   const [errorText, setErrorText] = useState("");
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+  const [user, setUser] = useState(null);
 
   const [googleUser, setGoogleUser] = useState(null);
 
@@ -40,14 +40,17 @@ const Login = () => {
             googleId: id,
           };
 
-          callAPI("/register", "POST", newUser)
+          callAPI("/register/google", "POST", newUser)
             .then((response) => {
-              const user = {
-                ...newUser,
-                _id: response.data.userId, // Store _id in the user object
-              };
-              // localStorage.setItem("user", JSON.stringify(user));
-              setUser(user);
+              const data = response.data;
+              if (data.user) {
+                const user = {
+                  ...data.user,
+                };
+                localStorage.setItem("user", JSON.stringify(user));
+                setUser(user);
+                window.location.href = "/"; // Redirect to home page
+              }
             })
             .catch((error) => {
               console.log(error);
@@ -60,7 +63,10 @@ const Login = () => {
   }, [googleUser]);
 
   useEffect(() => {
-    setUser(JSON.parse(localStorage.getItem("user")));
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) {
+      setUser(storedUser);
+    }
   }, []);
 
   const handleUsernameChange = (e) => {
@@ -111,9 +117,12 @@ const Login = () => {
       });
   };
 
+  if (user) {
+    return <Navigate to="/" />;
+  }
+
   return (
     <div className="container">
-      {user ? <Navigate to="/" /> : null}
       <div className="row justify-content-center">
         <div className="col-md-6">
           <div className="card mt-5">
