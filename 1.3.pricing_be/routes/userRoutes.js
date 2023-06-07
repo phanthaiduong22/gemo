@@ -21,11 +21,15 @@ router.post("/login", async (req, res, next) => {
   try {
     const user = await User.findOne({ username });
 
+    console.log(user);
+
     if (!user) {
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    console.log(isPasswordValid);
 
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid username or password" });
@@ -237,10 +241,6 @@ router.put("/users", verifyToken, async (req, res, next) => {
   try {
     if (username) {
       user.username = username;
-    }
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      user.password = hashedPassword;
     }
     if (role) {
       user.role = role;
