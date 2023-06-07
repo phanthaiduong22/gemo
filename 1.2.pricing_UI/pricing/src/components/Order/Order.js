@@ -30,7 +30,7 @@ class Order extends Component {
   }
 
   componentDidMount = () => {
-    // setInterval(this.updateAllowFetchingNewOrders(), 3000);
+    setInterval(this.updateAllowFetchingNewOrders(), 3000);
   };
 
   renderItemImage(item) {
