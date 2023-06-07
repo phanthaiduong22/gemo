@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { showAlert } from "../../redux/actions/alertActions";
 import callAPI from "../../utils/apiCaller";
 
-const FeedbackModal = ({ orderId }) => {
+const FeedbackModal = ({ orderId, onFeedbackUpdate }) => {
   const dispatch = useDispatch();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +12,7 @@ const FeedbackModal = ({ orderId }) => {
 
   const handleToggleModal = () => {
     setIsOpen(!isOpen);
+    onFeedbackUpdate(!isOpen);
     setMessage(""); // Clear the message when the modal is toggled
   };
 

@@ -26,6 +26,7 @@ class Order extends Component {
         confirmStatus: "",
       },
       showCommentSection: false,
+      showFeedbackModal: false,
     };
   }
 
@@ -175,10 +176,20 @@ class Order extends Component {
   };
 
   updateAllowFetchingNewOrders = () => {
-    const { showCommentSection, confirmModal } = this.state;
+    const { showCommentSection, confirmModal, showFeedbackModal } = this.state;
     const { show } = confirmModal;
-    const allowFetchingOrders = !(showCommentSection || show);
+    const allowFetchingOrders = !(
+      showCommentSection ||
+      show ||
+      showFeedbackModal
+    );
     this.props.updateAllowFetchingNewOrders(allowFetchingOrders);
+  };
+
+  onFeedbackUpdate = (showFeedbackModal) => {
+    this.setState({ showFeedbackModal }, () => {
+      this.updateAllowFetchingNewOrders();
+    });
   };
 
   render() {
@@ -374,7 +385,10 @@ class Order extends Component {
                   {(order.status === "Completed" ||
                     order.status === "Cancelled") &&
                   user.role == "customer" ? (
-                    <FeedbackModal orderId={order._id} />
+                    <FeedbackModal
+                      orderId={order._id}
+                      onFeedbackUpdate={this.onFeedbackUpdate}
+                    />
                   ) : null}
                   <button
                     className="btn btn-primary"
