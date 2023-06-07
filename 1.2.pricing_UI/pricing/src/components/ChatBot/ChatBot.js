@@ -25,8 +25,8 @@ const ChatBot = ({ user }) => {
   };
 
   const botResponse = async (prompt) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       callAPI("/chat", "POST", {
         prompt: prompt,
       })
@@ -37,9 +37,11 @@ const ChatBot = ({ user }) => {
           };
           setMessages((messages) => [...messages, botMessage]);
           setUserInput("");
+          setIsLoading(false);
         })
         .catch((error) => {
           console.log(error);
+          setIsLoading(false);
         });
     } catch (error) {
       const botMessage = {
@@ -47,7 +49,6 @@ const ChatBot = ({ user }) => {
         text: error.message,
       };
       setMessages((messages) => [...messages, botMessage]);
-    } finally {
       setIsLoading(false);
     }
   };
