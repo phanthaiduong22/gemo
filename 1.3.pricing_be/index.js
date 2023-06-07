@@ -23,7 +23,10 @@ if (process.env.NODE_ENV === "production") {
   app.use(morgan("combined"));
   app.use(
     cors({
-      origin: "https://restaurant.duongphan.com", // Replace with your production frontend domain
+      origin: [
+        "https://restaurant.duongphan.com", // Replace with your production frontend domain
+        "https://duongphan.com",
+      ],
       credentials: true,
     })
   );
@@ -31,7 +34,11 @@ if (process.env.NODE_ENV === "production") {
   app.use(morgan("dev"));
   app.use(
     cors({
-      origin: "http://localhost:3000", // Replace with your development frontend domain
+      origin: [
+        "https://restaurant.duongphan.com",
+        "https://duongphan.com",
+        "http://localhost:3000",
+      ],
       credentials: true,
     })
   );
