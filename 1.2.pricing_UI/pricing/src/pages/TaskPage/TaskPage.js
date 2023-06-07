@@ -32,16 +32,42 @@ const TaskPage = () => {
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
-    // const sourceColumnId = result.source.droppableId;
+    const sourceColumnId = result.source.droppableId;
     const destinationColumnId = result.destination.droppableId;
-    const draggedTaskIndex = result.source.index;
+    const draggedTaskId = result.draggableId; // Use the provided draggableId directly
 
-    const updatedTasks = [...tasks]; // Copy the tasks array
-    const draggedTask = updatedTasks[draggedTaskIndex];
+    // Create a copy of the tasks array
+    const updatedTasks = [...tasks];
+
+    // Find the dragged task in the tasks array
+    const draggedTask = updatedTasks.find((task) => task._id === draggedTaskId);
+
+    // Update the status of the dragged task
     draggedTask.status = destinationColumnId;
 
+    // Reorder the tasks within the destination column
+    const sourceTasks = updatedTasks.filter(
+      (task) => task.status === sourceColumnId
+    );
+    const destinationTasks = updatedTasks.filter(
+      (task) => task.status === destinationColumnId
+    );
+    const sourceIndex = sourceTasks.findIndex(
+      (task) => task._id === draggedTaskId
+    );
+    const destinationIndex = result.destination.index;
+
+    // Remove the dragged task from the source column
+    sourceTasks.splice(sourceIndex, 1);
+
+    // Insert the dragged task at the correct position in the destination column
+    destinationTasks.splice(destinationIndex, 0, draggedTask);
+
+    // Update the state with the updated tasks
+    setTasks(updatedTasks);
+
     // Make API call to update the task status
-    callAPI(`/feedback/${draggedTask._id}`, "PUT", {
+    callAPI(`/feedback/${draggedTaskId}`, "PUT", {
       status: destinationColumnId,
     })
       .then((res) => {
@@ -50,10 +76,6 @@ const TaskPage = () => {
       .catch((err) => {
         console.log(err);
       });
-
-    updatedTasks.splice(draggedTaskIndex, 1);
-    updatedTasks.splice(result.destination.index, 0, draggedTask);
-    setTasks(updatedTasks);
   };
 
   return (
@@ -97,9 +119,10 @@ const TaskPage = () => {
 };
 
 const Column = ({ title, droppableId, tasks, onTaskUpdate }) => {
-  const filteredTasks = tasks
-    ? tasks.filter((task) => task.status === droppableId)
-    : [];
+  const filteredTasks = tasks.filter((task) => {
+    const taskIndex = tasks.findIndex((t) => t._id === task._id);
+    return tasks[taskIndex].status === droppableId;
+  });
 
   const handleTaskUpdate = (taskId, updatedTask) => {
     onTaskUpdate(taskId, updatedTask);

@@ -49,7 +49,6 @@ const TaskItem = ({ task, onTaskUpdate }) => {
     }
   };
 
-  console.log(task);
   if (!task) return null;
 
   return (
