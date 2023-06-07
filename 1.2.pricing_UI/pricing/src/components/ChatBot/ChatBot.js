@@ -26,31 +26,27 @@ const ChatBot = ({ user }) => {
 
   const botResponse = async (prompt) => {
     setIsLoading(true);
-    try {
-      callAPI("/chat", "POST", {
-        prompt: prompt,
+    callAPI("/chat", "POST", {
+      prompt: prompt,
+    })
+      .then((response) => {
+        const botMessage = {
+          user: "Bot",
+          text: response.data.response,
+        };
+        setMessages((messages) => [...messages, botMessage]);
+        setUserInput("");
+        setIsLoading(false);
       })
-        .then((response) => {
-          const botMessage = {
-            user: "Bot",
-            text: response.data.response,
-          };
-          setMessages((messages) => [...messages, botMessage]);
-          setUserInput("");
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.log(error);
-          setIsLoading(false);
-        });
-    } catch (error) {
-      const botMessage = {
-        user: "Bot",
-        text: error.message,
-      };
-      setMessages((messages) => [...messages, botMessage]);
-      setIsLoading(false);
-    }
+      .catch((error) => {
+        const botMessage = {
+          user: "Bot",
+          text: "Sorry! I'm not available right now. Please try again later.",
+        };
+        setMessages((messages) => [...messages, botMessage]);
+        setIsLoading(false);
+        setIsLoading(false);
+      });
   };
 
   const toggleChatbot = () => {
@@ -60,7 +56,7 @@ const ChatBot = ({ user }) => {
   useEffect(() => {
     const initialBotMessage = {
       user: "Bot",
-      text: "Hello! How can I assist you today?",
+      text: "Hello! I'm Hiroki. How can I assist you today?",
     };
     setMessages([initialBotMessage]);
   }, []);
@@ -76,7 +72,7 @@ const ChatBot = ({ user }) => {
       {showChatbot ? (
         <div className="chatbot-container">
           <div className="chatbot-header">
-            <h3>ChatBot</h3>
+            <h3>Chat Bot</h3>
             <button className="close-button" onClick={toggleChatbot}>
               X
             </button>
@@ -147,7 +143,7 @@ const ChatBot = ({ user }) => {
           className="btn btn-primary rounded-pill chatbot-button"
           onClick={toggleChatbot}
         >
-          ChatBot
+          Chat Bot
         </button>
       )}
     </div>

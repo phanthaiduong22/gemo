@@ -87,10 +87,10 @@ router.post("/chat", verifyToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     if (error.response) {
-      console.log(error.response.data);
+      // console.log(error.response.data);
       res.status(error.response.status).json({ error: error.response.data });
     } else {
-      console.log(error.message);
+      // console.log(error.message);
       res.status(500).json({ error: "Internal Server Error" });
     }
   }
