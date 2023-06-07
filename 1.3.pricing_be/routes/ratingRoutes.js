@@ -6,12 +6,14 @@ const { ChatCompletionResponseMessageRoleEnum } = require("openai");
 const router = express.Router();
 
 // Calculate product ratings and average rating for a user's orders
-router.get("/rating/users", verifyToken, async (req, res, next) => {
+router.get("/rating/users/:userId", verifyToken, async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.params.userId;
 
     // Find all orders assigned to the user and populate the 'items' field
     const orders = await Order.find({ assignedUser: userId }).populate("items");
+
+    console.log(orders);
 
     const fetchedRatings = calculateRatings(orders);
 
@@ -86,6 +88,7 @@ const calculateRatings = (orders) => {
   // Iterate through each order
   orders.forEach((order) => {
     // Iterate through each item in the order
+    if (order.rating == 0) return;
     order.items.forEach((item) => {
       if (order.rating == 0) return;
       const { drink, food } = item;

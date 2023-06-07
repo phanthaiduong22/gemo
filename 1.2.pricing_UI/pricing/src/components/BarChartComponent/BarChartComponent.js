@@ -11,7 +11,7 @@ const BarChartComponent = ({ userId }) => {
 
   useEffect(() => {
     const fetchRatings = async () => {
-      callAPI("/rating/users", "GET", null)
+      callAPI(`/rating/users/${userId}`, "GET", null)
         .then((response) => {
           setFetchedRatings(response.data);
         })

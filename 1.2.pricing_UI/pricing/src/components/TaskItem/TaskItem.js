@@ -27,7 +27,6 @@ const TaskItem = ({ task, onTaskUpdate }) => {
       status,
     })
       .then((res) => {
-        console.log("I'm calling onTaskUpdate");
         onTaskUpdate(task._id, res.data.feedback);
       })
       .catch((err) => {
@@ -50,7 +49,8 @@ const TaskItem = ({ task, onTaskUpdate }) => {
     }
   };
 
-  console.log("task", task);
+  console.log(task);
+  if (!task) return null;
 
   return (
     <div className="">
@@ -125,37 +125,42 @@ const TaskItem = ({ task, onTaskUpdate }) => {
                 -1 is most Negative, 1 is most Positive
               </Form.Text>
             </Form.Group>
-
             {/* Display user information */}
-            <Form.Group controlId="formUser" className="mt-2">
-              <Dropdown>
-                <Dropdown.Toggle variant="primary" id="dropdown-user">
-                  User Info
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item>
-                    <p>Username: {task.order.user.username}</p>
-                    <p>Full Name: {task.order.user.fullName}</p>
-                    <p>Email: {task.order.user.email}</p>
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            </Form.Group>
-
-            <Form.Group controlId="formUser" className="mt-2">
-              <Dropdown>
-                <Dropdown.Toggle variant="primary" id="dropdown-assignedUser">
-                  Assigned User
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item>
-                    <p>Username: {task.order.assignedUser.username}</p>
-                    <p>Full Name: {task.order.assignedUser.fullName}</p>
-                    <p>Email: {task.order.assignedUser.email}</p>
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            </Form.Group>
+            {task.order && (
+              <>
+                <Form.Group controlId="formUser" className="mt-2">
+                  <Dropdown>
+                    <Dropdown.Toggle variant="primary" id="dropdown-user">
+                      User Info
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item>
+                        <p>Username: {task.order.user.username}</p>
+                        <p>Full Name: {task.order.user.fullName}</p>
+                        <p>Email: {task.order.user.email}</p>
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Form.Group>
+                <Form.Group controlId="formUser" className="mt-2">
+                  <Dropdown>
+                    <Dropdown.Toggle
+                      variant="primary"
+                      id="dropdown-assignedUser"
+                    >
+                      Assigned User
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item>
+                        <p>Username: {task.order.assignedUser.username}</p>
+                        <p>Full Name: {task.order.assignedUser.fullName}</p>
+                        <p>Email: {task.order.assignedUser.email}</p>
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </Form.Group>
+              </>
+            )}
           </Form>
         </Modal.Body>
         <Modal.Footer>

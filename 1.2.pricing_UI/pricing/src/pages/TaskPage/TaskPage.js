@@ -11,11 +11,8 @@ const TaskPage = () => {
     try {
       const response = await callAPI("/feedback", "GET", null);
       const tasks = response.data.feedbacks;
-      console.log("tasks", tasks);
       setTasks(tasks);
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {

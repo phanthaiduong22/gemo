@@ -371,8 +371,9 @@ class Order extends Component {
                 )}
 
                 <div>
-                  {order.status === "Completed" ||
-                  order.status === "Cancelled" ? (
+                  {(order.status === "Completed" ||
+                    order.status === "Cancelled") &&
+                  user.role == "customer" ? (
                     <FeedbackModal orderId={order._id} />
                   ) : null}
                   <button

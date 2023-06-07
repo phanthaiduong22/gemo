@@ -38,7 +38,7 @@ router.post("/login", async (req, res, next) => {
     };
 
     const token = jwt.sign(userToken, process.env.SECRET_KEY, {
-      expiresIn: "1h",
+      expiresIn: "10h",
     });
 
     res.cookie("token", token, {
@@ -142,7 +142,7 @@ router.post("/register/google", async (req, res, next) => {
       };
 
       const token = jwt.sign(userToken, process.env.SECRET_KEY, {
-        expiresIn: "5h",
+        expiresIn: "10h",
       });
 
       res.cookie("token", token, {

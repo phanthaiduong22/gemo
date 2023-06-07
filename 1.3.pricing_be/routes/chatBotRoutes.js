@@ -1,5 +1,6 @@
 const express = require("express");
 const Order = require("../models/order");
+const User = require("../models/user");
 const { verifyToken } = require("../middleware/authMiddleware");
 const { calculateRatings } = require("../routes/ratingRoutes");
 const router = express.Router();
@@ -51,9 +52,30 @@ router.post("/chat", verifyToken, async (req, res) => {
           content: prompt,
         }
       );
+    } else if (user.role === "staff") {
+      // Get all barista' ID
+      const baristas = await User.find({ role: "barista" });
+      const baristaIds = baristas.map((barista) => barista._id);
+      let performances = [];
+      for (let i = 0; i < baristaIds.length; i++) {
+        const performance = await getOrderCommentsAndRatingsByAssignedUserId(
+          baristaIds[i]
+        );
+        performances = performances.concat(performance);
+      }
+      messages.push(
+        {
+          role: "system",
+          content: `You are manager of a cafeteria. You will be provide barista's performance. Can you evaluate the barista's performance?
+            ${delimiter} ${JSON.stringify(performances)} ${delimiter}
+          `,
+        },
+        {
+          role: "user",
+          content: prompt,
+        }
+      );
     }
-
-    console.log(messages);
 
     const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
