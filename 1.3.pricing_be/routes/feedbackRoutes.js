@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Feedback = require("../models/feedback");
 const Order = require("../models/order");
+const User = require("../models/user");
 const { evaluateFeedback } = require("../routes/chatBotRoutes");
 const { verifyToken, authorize } = require("../middleware/authMiddleware");
 const { sendEmail } = require("../utils/nodeMailer");
@@ -75,7 +76,14 @@ router.post("/feedback", verifyToken, async (req, res) => {
     res.status(201).json({ success: true, message: evaluation });
 
     if (sentimentScore < 0) {
-      sendEmail("phanthaiduong2000@gmail.com");
+      // get assignedUser info
+      const assignedUser = await User.findById(existingOrder.assignedUser);
+      const user = await User.findById(existingOrder.user);
+      if (assignedUser.email) {
+        sendEmail(assignedUser.email, user, feedback);
+      } else {
+        sendEmail("phanthaiduong2000@gmail.com", user, feedback);
+      }
     }
   } catch (error) {
     console.log(error.message);

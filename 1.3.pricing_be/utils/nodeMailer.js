@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-function sendEmail(to) {
+function sendEmail(assignedUserEmail, user, feedback) {
   // Create a transporter object
   let transporter = nodemailer.createTransport({
     service: "gmail",
@@ -13,9 +13,19 @@ function sendEmail(to) {
   // Define the email options
   let mailOptions = {
     from: process.env.GMAIL_USERNAME,
-    to: "phanthaiduong2000@gmail.com",
+    to: assignedUserEmail,
     subject: "[Order Me] Your customer is not happy",
-    text: "Your customer is not happy with your service. Please check your email for more details",
+    text: `
+    Your customer is not happy with your service.
+
+    Their feedback: ${feedback}
+
+    Their contact info:
+    Username: ${user.username}
+    Full Name: ${user.fullName}
+    Email: ${user.email}
+    Phone: ${user.phone}
+  `,
   };
 
   // Send the email
@@ -23,7 +33,7 @@ function sendEmail(to) {
     if (error) {
       console.log("Error occurred:", error);
     } else {
-      console.log("Email sent successfully:", info.response);
+      // console.log("Email sent successfully:", info.response);
     }
   });
 }
