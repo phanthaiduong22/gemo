@@ -60,12 +60,14 @@ class Register extends React.Component {
         successText: "Registration successful!",
       });
     } catch (error) {
-      console.error("Error during registration:", error);
-
       let errorMessage = "Registration failed";
 
-      if (error.response && error.response.data && error.response.data.error) {
-        errorMessage = error.response.data.error;
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        errorMessage = error.response.data.message;
       }
 
       this.setState({
@@ -137,8 +139,8 @@ class Register extends React.Component {
                       onChange={this.handleRoleChange}
                     >
                       <option value="customer">Customer</option>
-                      <option value="staff">Staff</option>
                       <option value="barista">Barista</option>
+                      <option value="staff">Staff</option>
                     </select>
                   </div>
                   <div className="mt-4">

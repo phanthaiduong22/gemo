@@ -45,15 +45,17 @@ app.use(logger);
 
 const userRoutes = require("./routes/userRoutes");
 const orderRoutes = require("./routes/orderRoutes");
-const chatBotRoutes = require("./routes/chatBotRoutes");
+const { chatBotRoutes } = require("./routes/chatBotRoutes");
 const { ratingRoutes } = require("./routes/ratingRoutes");
 const setupChatWebSocket = require("./routes/chatWebSocket");
+const feedbackRoutes = require("./routes/feedbackRoutes");
 
 // Routes
 app.use("/api", userRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", chatBotRoutes);
 app.use("/api", ratingRoutes);
+app.use("/api", feedbackRoutes);
 
 // Store WebSocket connections and comments for each order
 setupChatWebSocket(server);

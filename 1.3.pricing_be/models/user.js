@@ -19,11 +19,7 @@ const userSchema = new mongoose.Schema({
   phone: String,
   address: String,
   googleId: String,
-  picture: {
-    type: String,
-    default:
-      "https://www.pngall.com/wp-content/uploads/12/Avatar-Profile-Vector-No-Background.png",
-  },
+  picture: String,
 });
 
 const User = mongoose.model("User", userSchema);

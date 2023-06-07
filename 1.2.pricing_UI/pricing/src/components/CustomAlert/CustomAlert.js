@@ -15,18 +15,10 @@ const CustomAlert = ({ alert, dismissAlert }) => {
 
   const { type, message } = alert;
 
-  const alertClassName = `alert ${type === "success" ? "success" : "error"}`;
-
   return alert.show ? (
-    <div className={alertClassName}>
-      <BootstrapAlert
-        variant={type === "success" ? "success" : "danger"}
-        dismissible
-        onClose={dismissAlert}
-      >
-        {message}
-      </BootstrapAlert>
-    </div>
+    <BootstrapAlert variant={type} dismissible onClose={dismissAlert}>
+      {message}
+    </BootstrapAlert>
   ) : null;
 };
 
