@@ -5,15 +5,21 @@ import { FormattedMessage, injectIntl } from "react-intl";
 import "./Cart.css";
 import { HiOutlineTrash } from "react-icons/hi";
 import emptyCartImage from "../../images/empty_cart.png";
-import { removeFromCart, clearCart } from "../../redux/actions/cartActions";
 import { showAlert } from "../../redux/actions/alertActions";
 import callAPI from "../../utils/apiCaller";
+import coffeeImage from "../../images/coffee.png";
+import milkteaImage from "../../images/milktea.png";
+import bagelImage from "../../images/bagel.png";
+import sandwichImage from "../../images/sandwich.png";
 
 class Cart extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isModalOpen: props.isModalOpen,
+      cart: {
+        items: [],
+      },
     };
   }
 
@@ -21,30 +27,56 @@ class Cart extends Component {
     this.props.handleClose();
   };
 
+  componentDidMount = () => {
+    callAPI("/cart", "GET", null)
+      .then((res) => {
+        console.log(res);
+        if (res.data) {
+          this.setState({ cart: res.data.cart });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   handleRemoveCartItem = (itemId) => {
-    this.props.removeFromCart(itemId);
+    callAPI(`/cart/${itemId}`, "DELETE", null)
+      .then((res) => {
+        if (res.data.cart) {
+          this.setState({
+            cart: res.data.cart,
+          });
+          this.props.showAlert("success", "Remove item from cart successfully");
+        }
+      })
+      .catch((err) => {
+        this.props.showAlert("danger", "Remove item from cart failed");
+        console.log(err);
+      });
   };
 
   handleClearCart = () => {
-    this.props.clearCart();
+    callAPI("/cart", "DELETE", null)
+      .then((res) => {
+        this.props.showAlert("success", "Clear cart successfully");
+        this.setState({ cart: { items: [] } });
+      })
+      .catch((err) => {
+        this.props.showAlert("danger", "Clear cart failed");
+        console.log(err);
+      });
   };
 
   handleAddToOrder = async () => {
-    const { cart } = this.props;
-    const order = cart;
-    const updatedOrder = {
-      ...order,
-      status: "Pending",
-      items: order.items.map(({ id, ...item }) => item),
-    };
-
-    callAPI("orders", "POST", updatedOrder)
+    callAPI("/orders", "POST", null)
       .then((res) => {
-        this.handleClearCart();
-        this.props.showAlert("success", "Order created successfully");
+        this.props.showAlert("success", "Add to order successfully");
+        if (res.data.cart) this.setState({ cart: res.data.cart });
       })
       .catch((err) => {
-        this.props.showAlert("danger", `Error creating order: ${err.message}`);
+        this.props.showAlert("danger", "Add to order failed");
+        console.log(err);
       });
   };
 
@@ -74,8 +106,24 @@ class Cart extends Component {
     return topping;
   }
 
+  renderItemImage(item) {
+    if (item.drink) {
+      if (item.drink === "Coffee") {
+        return coffeeImage;
+      } else if (item.drink === "Milk Tea") {
+        return milkteaImage;
+      }
+    } else if (item.food) {
+      if (item.food === "Bagel") {
+        return bagelImage;
+      } else if (item.food === "Sandwich") {
+        return sandwichImage;
+      }
+    }
+  }
+
   render() {
-    const { cart } = this.props;
+    const { cart } = this.state;
     const { items } = cart;
 
     return (
@@ -98,7 +146,7 @@ class Cart extends Component {
                     <td style={{ width: 150 }}>
                       <img
                         className="cart-image"
-                        src={item.image}
+                        src={this.renderItemImage(item)}
                         alt={item.name}
                       />
                     </td>
@@ -142,13 +190,9 @@ class Cart extends Component {
                     <td style={{ width: 150, verticalAlign: "middle" }}>
                       <button
                         className="btn btn-danger"
-                        onClick={() => this.handleRemoveCartItem(item.id)}
+                        onClick={() => this.handleRemoveCartItem(item._id)}
                         style={{ padding: 10, fontSize: 20 }}
                       >
-                        {/* <FormattedMessage
-                            id="cart.remove"
-                            defaultMessage="Remove"
-                          /> */}
                         <HiOutlineTrash />
                       </button>
                     </td>
@@ -204,8 +248,6 @@ class Cart extends Component {
           )}
         </Modal.Body>
         <Modal.Footer>
-          {/* <Button onClick={this.handleClose}>Cancel</Button> */}
-
           {items.length ? (
             <>
               <>
@@ -240,14 +282,8 @@ class Cart extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({
-  cart: state.cart,
-});
-
 const mapDispatchToProps = {
-  removeFromCart,
-  clearCart,
   showAlert,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(injectIntl(Cart));
+export default connect(null, mapDispatchToProps)(injectIntl(Cart));

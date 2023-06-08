@@ -1,5 +1,5 @@
 const express = require("express");
-const Order = require("../models/order");
+const { Order } = require("../models/order");
 const { verifyToken } = require("../middleware/authMiddleware");
 const { ChatCompletionResponseMessageRoleEnum } = require("openai");
 
@@ -70,6 +70,7 @@ router.get("/rating/item", verifyToken, async (req, res, next) => {
     const ratings = calculateRatings(orders);
     res.json(ratings);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 });

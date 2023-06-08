@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Feedback = require("../models/feedback");
-const Order = require("../models/order");
+const { Order } = require("../models/order");
 const User = require("../models/user");
 const { evaluateFeedback } = require("../routes/chatBotRoutes");
 const { verifyToken, authorize } = require("../middleware/authMiddleware");
