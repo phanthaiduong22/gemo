@@ -1,30 +1,45 @@
 // routes/orderRoutes.js
 const express = require("express");
-const Order = require("../models/order");
+const { Order } = require("../models/order");
 const User = require("../models/user");
+const Cart = require("../models/cart");
 const { verifyToken } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 // Create a new order
 router.post("/orders", verifyToken, async (req, res, next) => {
+  const userId = req.user._id;
+  const cart = await Cart.findOne({ user: userId });
+  if (!cart) {
+    return res.status(404).json({ message: "Cart not found" });
+  }
+
+  // Create a new order using the cart items
+  const order = new Order({
+    user: userId,
+    username: req.user.username,
+    items: cart.items,
+    cartPrice: cart.cartPrice,
+  });
+
   try {
-    const user = req.user;
+    // Save the order to the database
+    const savedOrder = await order.save();
 
-    const { items, status, cartPrice } = req.body;
+    // Empty the cart by removing all items
+    cart.items = [];
+    cart.cartPrice = {
+      totalCartPrice: 0,
+      tax: 0,
+      totalCartPriceAfterTax: 0,
+    };
+    await cart.save();
 
-    const newOrder = new Order({
-      user: user._id,
-      username: user.username,
-      items: items,
-      status: status,
-      cartPrice: cartPrice,
-    });
-
-    const createdOrder = await newOrder.save();
-    res.status(201).json(createdOrder);
+    // Return the saved order as the response
+    res.status(200).json({ cart });
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: "Error creating order" });
   }
 });
 

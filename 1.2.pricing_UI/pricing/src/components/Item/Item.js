@@ -1,11 +1,12 @@
 import React from "react";
 import { connect } from "react-redux";
-import { addToCart } from "../../redux/actions/cartActions";
+// import { addToCart } from "../../redux/actions/cartActions";
 import DrinkOptionModal from "../DrinkOptionModal/DrinkOptionModal";
 import FoodOptionModal from "../FoodOptionModal/FoodOptionModal";
 import { tw } from "twind";
 import { showAlert } from "../../redux/actions/alertActions";
 import { Rating } from "react-simple-star-rating";
+import callAPI from "../../utils/apiCaller";
 
 class Item extends React.Component {
   constructor(props) {
@@ -27,11 +28,18 @@ class Item extends React.Component {
     this.setState({ showModal: false });
     const { showError, errorText, ...filteredItem } = item;
 
-    // Dispatch action to show success alert
-    this.props.showAlert("success", "Item added to cart!");
+    callAPI("/cart", "POST", { item: filteredItem })
+      .then((res) => {
+        console.log(res);
+        this.props.showAlert("success", "Item added to cart!");
+      })
+      .catch((err) => {
+        console.log(err);
+        this.props.showAlert("danger", "Add item to cart failed!");
+      });
 
     // Add item to cartItems in Redux
-    this.props.addToCart(filteredItem);
+    // this.props.addToCart(filteredItem);
   };
 
   render() {
@@ -102,4 +110,4 @@ class Item extends React.Component {
   }
 }
 
-export default connect(null, { addToCart, showAlert })(Item);
+export default connect(null, { showAlert })(Item);

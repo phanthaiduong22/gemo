@@ -56,6 +56,7 @@ const { chatBotRoutes } = require("./routes/chatBotRoutes");
 const { ratingRoutes } = require("./routes/ratingRoutes");
 const setupChatWebSocket = require("./routes/chatWebSocket");
 const feedbackRoutes = require("./routes/feedbackRoutes");
+const cartRoutes = require("./routes/cartRoutes");
 
 // Routes
 app.use("/api", userRoutes);
@@ -63,6 +64,7 @@ app.use("/api", orderRoutes);
 app.use("/api", chatBotRoutes);
 app.use("/api", ratingRoutes);
 app.use("/api", feedbackRoutes);
+app.use("/api", cartRoutes);
 
 // Store WebSocket connections and comments for each order
 setupChatWebSocket(server);
