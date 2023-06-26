@@ -12,6 +12,12 @@ import { Rating } from "react-simple-star-rating";
 import WebSocketComment from "./WebSocketComment/WebSocketComment";
 import callAPI from "../../utils/apiCaller";
 import FeedbackModal from "../../components/FeedbackModal/FeedbackModal";
+// import { ReviewForm } from "caffino-feedback-module/lib/components/review-form";
+import {
+  ReviewForm,
+  ReviewItem,
+  GetReviewsOfOrder,
+} from "caffino-feedback-module";
 
 class Order extends Component {
   constructor(props) {
@@ -25,13 +31,37 @@ class Order extends Component {
         confirmOrderId: null,
         confirmStatus: "",
       },
+      reviews: [],
       showCommentSection: false,
       showFeedbackModal: false,
     };
   }
 
+  firebaseConfig = {
+    apiKey: "AIzaSyBN6JIqWlZfOaRmlTt7a-sSp2WHHJI6y-U",
+    authDomain: "module-feedback-95688.firebaseapp.com",
+    projectId: "module-feedback-95688",
+    storageBucket: "module-feedback-95688.appspot.com",
+    messagingSenderId: "855291801645",
+    appId: "1:855291801645:web:162f6fc75753054110c8a4",
+  };
+
+  reviewConfig = {
+    firebaseConfig: this.firebaseConfig,
+    reviewCollectionPath: "reviews",
+  };
+
   componentDidMount = () => {
-    setInterval(this.updateAllowFetchingNewOrders(), 3000);
+    // setInterval(this.updateAllowFetchingNewOrders(), 3000);
+    console.log("Get reviews of order", this.state.order._id);
+    GetReviewsOfOrder(this.reviewConfig, this.state.order._id, 3)
+      .then((reviews) => {
+        this.setState({ reviews });
+        console.log("reviews", reviews);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   renderItemImage(item) {
@@ -192,11 +222,26 @@ class Order extends Component {
     });
   };
 
+  // app = initializeApp(this.firebaseConfig);
+
+  onFailure = (err) => {
+    console.log("onFailure", err);
+  };
+
   render() {
-    const { order, user, showCommentSection } = this.state;
+    const { order, user, showCommentSection, reviews } = this.state;
     const { items } = order;
     const showConfirmModal = this.state.confirmModal.show;
     const isCurrentUserOrderUser = user._id === order.user;
+
+    console.log(reviews);
+
+    const userInfo = {
+      userUid: user._id,
+      displayName: user.username,
+      imageUrl: user.picture,
+      canReply: true,
+    };
 
     return (
       <div>
@@ -397,6 +442,26 @@ class Order extends Component {
                     {showCommentSection ? "Hide Comments" : "Add Comment"}
                   </button>
                 </div>
+              </div>
+              <div>
+                <ReviewForm
+                  isModal={false}
+                  userInfo={userInfo}
+                  reviewConfig={this.reviewConfig}
+                  orderUid={order._id}
+                  isActived={true}
+                  onFailure={this.handleFailure}
+                />
+                {reviews &&
+                  reviews.map((review) => (
+                    <ReviewItem
+                      review={review}
+                      config={this.reviewConfig}
+                      currentUser={userInfo}
+                      showUserAvatar={true}
+                      elevated={true}
+                    />
+                  ))}
               </div>
             </div>
           </div>
