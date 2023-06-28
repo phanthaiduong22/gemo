@@ -12,12 +12,7 @@ import { Rating } from "react-simple-star-rating";
 import WebSocketComment from "./WebSocketComment/WebSocketComment";
 import callAPI from "../../utils/apiCaller";
 import FeedbackModal from "../../components/FeedbackModal/FeedbackModal";
-// import { ReviewForm } from "caffino-feedback-module/lib/components/review-form";
-import {
-  ReviewForm,
-  ReviewItem,
-  GetReviewsOfOrder,
-} from "caffino-feedback-module";
+import { ReviewComponent } from "caffino-feedback-module";
 
 class Order extends Component {
   constructor(props) {
@@ -48,20 +43,18 @@ class Order extends Component {
 
   reviewConfig = {
     firebaseConfig: this.firebaseConfig,
-    reviewCollectionPath: "reviews",
+    reviewCollectionPath: "reviews-db",
   };
 
   componentDidMount = () => {
     // setInterval(this.updateAllowFetchingNewOrders(), 3000);
-    console.log("Get reviews of order", this.state.order._id);
-    GetReviewsOfOrder(this.reviewConfig, this.state.order._id, 3)
-      .then((reviews) => {
-        this.setState({ reviews });
-        console.log("reviews", reviews);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    // GetReviewsOfOrder(this.reviewConfig, this.state.order._id, 3)
+    //   .then((reviews) => {
+    //     this.setState({ reviews: [reviews[0]] });
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
   };
 
   renderItemImage(item) {
@@ -222,8 +215,6 @@ class Order extends Component {
     });
   };
 
-  // app = initializeApp(this.firebaseConfig);
-
   onFailure = (err) => {
     console.log("onFailure", err);
   };
@@ -323,6 +314,13 @@ class Order extends Component {
                   {order.cartPrice.tax.toFixed(2)}
                 </p>
               </div>
+              <hr />
+              <h5 className="d-flex align-items-center justify-content-end text-uppercase mb-0">
+                Total paid:{"  "}
+                <span className="ml-2 h2 mb-0 ms-2">
+                  ${order.cartPrice.totalCartPriceAfterTax.toFixed(2)}
+                </span>
+              </h5>
             </div>
 
             <div className="card-footer bg-grey text-black">
@@ -402,12 +400,6 @@ class Order extends Component {
                     onConfirm={this.handleConfirmation}
                   />
                 )}
-                <h5 className="d-flex align-items-center justify-content-end text-uppercase mb-0">
-                  Total paid:{"  "}
-                  <span className="ml-2 h2 mb-0 ms-2">
-                    ${order.cartPrice.totalCartPriceAfterTax.toFixed(2)}
-                  </span>
-                </h5>
               </div>
             </div>
             <div className="card-footer bg-grey text-black">
@@ -443,26 +435,16 @@ class Order extends Component {
                   </button>
                 </div>
               </div>
-              <div>
-                <ReviewForm
-                  isModal={false}
-                  userInfo={userInfo}
-                  reviewConfig={this.reviewConfig}
-                  orderUid={order._id}
-                  isActived={true}
-                  onFailure={this.handleFailure}
-                />
-                {reviews &&
-                  reviews.map((review) => (
-                    <ReviewItem
-                      review={review}
-                      config={this.reviewConfig}
-                      currentUser={userInfo}
-                      showUserAvatar={true}
-                      elevated={true}
-                    />
-                  ))}
-              </div>
+            </div>
+            <div className="card-footer bg-grey text-black">
+              <h2 className="mb-0">Feedback</h2>
+              <ReviewComponent
+                config={this.reviewConfig}
+                orderId={order._id}
+                currentUser={userInfo}
+                showUserAvatar={true}
+                elevated={true}
+              />
             </div>
           </div>
           {showCommentSection && (
