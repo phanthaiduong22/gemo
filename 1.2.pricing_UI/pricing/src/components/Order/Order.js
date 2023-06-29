@@ -12,6 +12,7 @@ import { Rating } from "react-simple-star-rating";
 import WebSocketComment from "./WebSocketComment/WebSocketComment";
 import callAPI from "../../utils/apiCaller";
 import FeedbackModal from "../../components/FeedbackModal/FeedbackModal";
+import { ReviewComponent } from "caffino-feedback-module";
 
 class Order extends Component {
   constructor(props) {
@@ -25,13 +26,35 @@ class Order extends Component {
         confirmOrderId: null,
         confirmStatus: "",
       },
+      reviews: [],
       showCommentSection: false,
       showFeedbackModal: false,
     };
   }
 
+  firebaseConfig = {
+    apiKey: "AIzaSyBN6JIqWlZfOaRmlTt7a-sSp2WHHJI6y-U",
+    authDomain: "module-feedback-95688.firebaseapp.com",
+    projectId: "module-feedback-95688",
+    storageBucket: "module-feedback-95688.appspot.com",
+    messagingSenderId: "855291801645",
+    appId: "1:855291801645:web:162f6fc75753054110c8a4",
+  };
+
+  reviewConfig = {
+    firebaseConfig: this.firebaseConfig,
+    reviewCollectionPath: "reviews-db",
+  };
+
   componentDidMount = () => {
-    setInterval(this.updateAllowFetchingNewOrders(), 3000);
+    // setInterval(this.updateAllowFetchingNewOrders(), 3000);
+    // GetReviewsOfOrder(this.reviewConfig, this.state.order._id, 3)
+    //   .then((reviews) => {
+    //     this.setState({ reviews: [reviews[0]] });
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
   };
 
   renderItemImage(item) {
@@ -192,11 +215,24 @@ class Order extends Component {
     });
   };
 
+  onFailure = (err) => {
+    console.log("onFailure", err);
+  };
+
   render() {
-    const { order, user, showCommentSection } = this.state;
+    const { order, user, showCommentSection, reviews } = this.state;
     const { items } = order;
     const showConfirmModal = this.state.confirmModal.show;
     const isCurrentUserOrderUser = user._id === order.user;
+
+    console.log(reviews);
+
+    const userInfo = {
+      userUid: user._id,
+      displayName: user.username,
+      imageUrl: user.picture,
+      canReply: true,
+    };
 
     return (
       <div>
@@ -278,6 +314,13 @@ class Order extends Component {
                   {order.cartPrice.tax.toFixed(2)}
                 </p>
               </div>
+              <hr />
+              <h5 className="d-flex align-items-center justify-content-end text-uppercase mb-0">
+                Total paid:{"  "}
+                <span className="ml-2 h2 mb-0 ms-2">
+                  ${order.cartPrice.totalCartPriceAfterTax.toFixed(2)}
+                </span>
+              </h5>
             </div>
 
             <div className="card-footer bg-grey text-black">
@@ -357,12 +400,6 @@ class Order extends Component {
                     onConfirm={this.handleConfirmation}
                   />
                 )}
-                <h5 className="d-flex align-items-center justify-content-end text-uppercase mb-0">
-                  Total paid:{"  "}
-                  <span className="ml-2 h2 mb-0 ms-2">
-                    ${order.cartPrice.totalCartPriceAfterTax.toFixed(2)}
-                  </span>
-                </h5>
               </div>
             </div>
             <div className="card-footer bg-grey text-black">
@@ -398,6 +435,16 @@ class Order extends Component {
                   </button>
                 </div>
               </div>
+            </div>
+            <div className="card-footer bg-grey text-black">
+              <h2 className="mb-0">Feedback</h2>
+              <ReviewComponent
+                config={this.reviewConfig}
+                orderId={order._id}
+                currentUser={userInfo}
+                showUserAvatar={true}
+                elevated={true}
+              />
             </div>
           </div>
           {showCommentSection && (
